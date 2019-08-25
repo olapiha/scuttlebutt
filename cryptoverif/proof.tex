@@ -1,0 +1,1014 @@
+
+\documentclass{article}
+\usepackage[hmargin=1in,vmargin=1in]{geometry}
+\newcommand{\cinput}[2]{{#1}({#2})}
+\newcommand{\coutput}[2]{\overline{#1}\langle{#2}\rangle}
+\newcommand{\kw}[1]{\mathbf{#1}}
+\newcommand{\kwf}[1]{\mathsf{#1}}
+\newcommand{\var}[1]{\mathit{#1}}
+\newcommand{\kwt}[1]{\mathit{#1}}
+\newcommand{\kwp}[1]{\mathit{#1}}
+\newcommand{\kwc}[1]{\mathit{#1}}
+\begin{document}
+\begin{tabbing}
+000000\=\kill
+Initial state\\
+Game 1 is\\
+\>$\cinput{\kwc{start}}{};$\\
+\>$\kw{new}\ \var{initN}: \kwt{hmac{\_}key};$\\
+\>$\kw{new}\ \var{initsignA}: \kwt{seed};$\\
+\>$\kw{new}\ \var{initsignB}: \kwt{seed};$\\
+\>$\kw{new}\ \var{initskA}: \kwt{Z};$\\
+\>$\kw{new}\ \var{initskB}: \kwt{Z};$\\
+\>$\kw{new}\ \var{initm}: \kwt{message};$\\
+\>$\kw{new}\ \var{initkey}: \kwt{sym{\_}key};$\\
+\>$\coutput{\kwc{begin}}{\kwf{nonce0}};$\\
+\>$($\\
+\>$\quad !^{\var{i} \leq \kwp{N1}}$\\
+\>$\quad \cinput{\kwc{c9}[\var{i}]}{};$\\
+\>$\quad \kw{let}\ \var{pkA}: \kwt{G} = \kwf{exp}(\kwf{g}, \var{initskA})\ \kw{in}$\\
+\>$\quad \kw{let}\ \var{signAsk}: \kwt{skey} = \kwf{skgen}(\var{initsignA})\ \kw{in}$\\
+\>$\quad \kw{let}\ \var{signApk}: \kwt{pkey} = \kwf{pkgen}(\var{initsignA})\ \kw{in}$\\
+\>$\quad \kw{new}\ \var{ephemeral{\_}skA}: \kwt{Z};$\\
+\>$\quad \kw{let}\ \var{ephemeral{\_}pkA}: \kwt{G} = \kwf{exp}(\kwf{g}, \var{ephemeral{\_}skA})\ \kw{in}$\\
+\>$\quad \kw{let}\ \var{m1}: \kwt{bitstring} = \kwf{}(\var{ephemeral{\_}pkA}, \kwf{hmac}(\var{initN}, \kwf{G2bit}(\var{ephemeral{\_}pkA})))\ \kw{in}$\\
+\>$\quad \coutput{\kwc{c1}[\var{i}]}{\var{m1}};$\\
+\>$\quad \cinput{\kwc{c2}[\var{i}]}{\var{ephemeral{\_}pkX}: \kwt{G}, \var{hmacX}: \kwt{hmac{\_}key}};$\\
+\>$\quad \kw{if}\ (\var{hmacX}  =  \kwf{hmac}(\var{initN}, \kwf{G2bit}(\var{ephemeral{\_}pkX})))\ \kw{then}$\\
+\>$\quad \kw{event}\ \kwf{ClientConfirmNetwork}(\var{initN});$\\
+\>$\quad \kw{let}\ \var{key1A}: \kwt{G} = \kwf{exp}(\var{ephemeral{\_}pkX}, \var{ephemeral{\_}skA})\ \kw{in}$\\
+\>$\quad \kw{let}\ \var{key2A}: \kwt{G} = \kwf{exp}(\kwf{exp}(\kwf{g}, \var{initskB}), \var{ephemeral{\_}skA})\ \kw{in}$\\
+\>$\quad \kw{let}\ \var{secret1A}: \kwt{sym{\_}key} = \kwf{hash2key}(\kwf{hkey}, \kwf{}(\var{initN}, \var{key1A}, \var{key2A}))\ \kw{in}$\\
+\>$\quad \kw{let}\ \var{sign{\_}A}: \kwt{bitstring} = (\kw{let}\ \var{m}_{3}: \kwt{bitstring} = \kwf{}(\var{initN}, \kwf{exp}(\kwf{g}, \var{initskB}), \kwf{hash}(\kwf{hkey}, \kwf{G2bit}(\var{key1A})))\ \kw{in}\ \kw{new}\ \var{r}_{2}: \kwt{sign{\_}seed};\ \kwf{sign{\_}r}(\var{m}_{3}, \var{signAsk}, \var{r}_{2}))\ \kw{in}$\\
+\>$\quad \kw{let}\ \var{m3}: \kwt{bitstring} = \kwf{secret{\_}box}(\kwf{}(\var{sign{\_}A}, \var{pkA}, \var{signApk}), \kwf{empty{\_}addata}, \var{secret1A}, \kwf{nonce0})\ \kw{in}$\\
+\>$\quad \coutput{\kwc{c3}[\var{i}]}{\var{m3}};$\\
+\>$\quad \cinput{\kwc{c4}[\var{i}]}{\var{m5}: \kwt{bitstring}};$\\
+\>$\quad \kw{let}\ \var{key3A}: \kwt{G} = \kwf{exp}(\var{ephemeral{\_}pkX}, \var{initskA})\ \kw{in}$\\
+\>$\quad \kw{let}\ \var{secret2A}: \kwt{sym{\_}key} = \kwf{bit2symkey}(\kwf{}(\var{initN}, \var{key1A}, \var{key2A}, \var{key3A}))\ \kw{in}$\\
+\>$\quad \kw{let}\ \kwf{injbot}(\var{sign{\_}B}: \kwt{bitstring}) = \kwf{secret{\_}box{\_}open}(\var{m5}, \kwf{empty{\_}addata}, \var{secret2A}, \kwf{nonce0})\ \kw{in}$\\
+\>$\quad \kw{if}\ \kwf{check}(\kwf{}(\var{initN}, \var{sign{\_}A}, \var{pkA}, \kwf{hash}(\kwf{hkey}, \kwf{G2bit}(\var{key1A}))), \kwf{pkgen}(\var{initsignB}), \var{sign{\_}B})\ \kw{then}$\\
+\>$\quad \kw{event}\ \kwf{ClientAccept}(\kwf{exp}(\kwf{g}, \var{initskB}));$\\
+\>$\quad \coutput{\kwc{c10}[\var{i}]}{\var{secret2A}};$\\
+\>$\quad \cinput{\kwc{finish}[\var{i}]}{};$\\
+\>$\quad \kw{event}\ \kwf{ClientEndSession}(\var{pkA}, \var{initN})$\\
+\>$) \mid ($\\
+\>$\quad !^{\var{i}_{1} \leq \kwp{N1}}$\\
+\>$\quad \cinput{\kwc{c5}[\var{i}_{1}]}{\var{ephemeral{\_}pkY}: \kwt{G}, \var{hmacY}: \kwt{hmac{\_}key}};$\\
+\>$\quad \kw{let}\ \var{pkB}: \kwt{G} = \kwf{exp}(\kwf{g}, \var{initskB})\ \kw{in}$\\
+\>$\quad \kw{let}\ \var{signBsk}: \kwt{skey} = \kwf{skgen}(\var{initsignB})\ \kw{in}$\\
+\>$\quad \kw{if}\ (\var{hmacY}  =  \kwf{hmac}(\var{initN}, \kwf{G2bit}(\var{ephemeral{\_}pkY})))\ \kw{then}$\\
+\>$\quad \kw{event}\ \kwf{ServerConfirmNetwork}(\var{initN});$\\
+\>$\quad \kw{new}\ \var{ephemeral{\_}skB}: \kwt{Z};$\\
+\>$\quad \kw{let}\ \var{ephemeral{\_}pkB}: \kwt{G} = \kwf{exp}(\kwf{g}, \var{ephemeral{\_}skB})\ \kw{in}$\\
+\>$\quad \kw{let}\ \var{m2}: \kwt{bitstring} = \kwf{}(\var{ephemeral{\_}pkB}, \kwf{hmac}(\var{initN}, \kwf{G2bit}(\var{ephemeral{\_}pkB})))\ \kw{in}$\\
+\>$\quad \coutput{\kwc{c6}[\var{i}_{1}]}{\var{m2}};$\\
+\>$\quad \cinput{\kwc{c7}[\var{i}_{1}]}{\var{m4}: \kwt{bitstring}};$\\
+\>$\quad \kw{let}\ \var{key1B}: \kwt{G} = \kwf{exp}(\var{ephemeral{\_}pkY}, \var{ephemeral{\_}skB})\ \kw{in}$\\
+\>$\quad \kw{let}\ \var{key2B}: \kwt{G} = \kwf{exp}(\var{ephemeral{\_}pkY}, \var{initskB})\ \kw{in}$\\
+\>$\quad \kw{let}\ \var{secret1B}: \kwt{sym{\_}key} = \kwf{hash2key}(\kwf{hkey}, \kwf{}(\var{initN}, \var{key1B}, \var{key2B}))\ \kw{in}$\\
+\>$\quad \kw{let}\ \kwf{injbot}(\var{tuple}: \kwt{bitstring}) = \kwf{secret{\_}box{\_}open}(\var{m4}, \kwf{empty{\_}addata}, \var{secret1B}, \kwf{nonce0})\ \kw{in}$\\
+\>$\quad \kw{let}\ \kwf{}(\var{sign{\_}Y}: \kwt{bitstring}, \var{pkY}: \kwt{G}, \var{signYpk}: \kwt{pkey}) = \var{tuple}\ \kw{in}$\\
+\>$\quad \kw{if}\ (\var{signYpk}  =  \kwf{pkgen}(\var{initsignA}))\ \kw{then}$\\
+\>$\quad \kw{if}\ \kwf{check}(\kwf{}(\var{initN}, \var{pkB}, \kwf{hash}(\kwf{hkey}, \kwf{G2bit}(\var{key1B}))), \var{signYpk}, \var{sign{\_}Y})\ \kw{then}$\\
+\>$\quad \kw{let}\ \var{key3B}: \kwt{G} = \kwf{exp}(\var{pkY}, \var{ephemeral{\_}skB})\ \kw{in}$\\
+\>$\quad \kw{let}\ \var{secret2B}: \kwt{sym{\_}key} = \kwf{hash2key}(\kwf{hkey}, \kwf{}(\var{initN}, \var{key1B}, \var{key2B}, \var{key3B}))\ \kw{in}$\\
+\>$\quad \kw{let}\ \var{m6}: \kwt{bitstring} = \kwf{secret{\_}box}((\kw{let}\ \var{m}_{4}: \kwt{bitstring} = \kwf{}(\var{initN}, \var{sign{\_}Y}, \var{pkY}, \kwf{hash}(\kwf{hkey}, \kwf{G2bit}(\var{key1B})))\ \kw{in}\ \kw{new}\ \var{r}_{3}: \kwt{sign{\_}seed};\ \kwf{sign{\_}r}(\var{m}_{4}, \var{signBsk}, \var{r}_{3})), \kwf{empty{\_}addata}, \var{secret2B}, \kwf{nonce0})\ \kw{in}$\\
+\>$\quad \kw{event}\ \kwf{ServerAccept}(\var{pkY});$\\
+\>$\quad \coutput{\kwc{c8}[\var{i}_{1}]}{\var{m6}};$\\
+\>$\quad \cinput{\kwc{c11}[\var{i}_{1}]}{\var{m8}: \kwt{sym{\_}key}};$\\
+\>$\quad \kw{if}\ (\var{m8}  =  \var{secret2B})\ \kw{then}$\\
+\>$\quad \kw{event}\ \kwf{ServerEndSession}(\var{pkB}, \var{initN})$\\
+\>$)$\\
+\\
+\\
+Applying expand get, insert, if, let, find\\
+\quad -- Simplification pass\\
+\quad -- Expand if/find/let\\
+yields\\
+\\
+Game -1 is\\
+\>$\cinput{\kwc{start}}{};$\\
+\>$\kw{new}\ \var{initN}: \kwt{hmac{\_}key};$\\
+\>$\kw{new}\ \var{initsignA}: \kwt{seed};$\\
+\>$\kw{new}\ \var{initsignB}: \kwt{seed};$\\
+\>$\kw{new}\ \var{initskA}: \kwt{Z};$\\
+\>$\kw{new}\ \var{initskB}: \kwt{Z};$\\
+\>\{7\}\'$\kw{new}\ \var{initm}: \kwt{message};$\\
+\>$\kw{new}\ \var{initkey}: \kwt{sym{\_}key};$\\
+\>$\coutput{\kwc{begin}}{\kwf{nonce0}};$\\
+\>$($\\
+\>$\quad !^{\var{i} \leq \kwp{N1}}$\\
+\>$\quad \cinput{\kwc{c9}[\var{i}]}{};$\\
+\>$\quad \kw{let}\ \var{pkA}: \kwt{G} = \{16\}\kwf{exp}(\kwf{g}, \var{initskA})\ \kw{in}$\\
+\>$\quad \kw{let}\ \var{signAsk}: \kwt{skey} = \kwf{skgen}(\var{initsignA})\ \kw{in}$\\
+\>$\quad \kw{let}\ \var{signApk}: \kwt{pkey} = \kwf{pkgen}(\var{initsignA})\ \kw{in}$\\
+\>$\quad \kw{new}\ \var{ephemeral{\_}skA}: \kwt{Z};$\\
+\>$\quad \kw{let}\ \var{ephemeral{\_}pkA}: \kwt{G} = \{27\}\kwf{exp}(\kwf{g}, \var{ephemeral{\_}skA})\ \kw{in}$\\
+\>$\quad \kw{let}\ \var{m1}: \kwt{bitstring} = \kwf{}(\var{ephemeral{\_}pkA}, \kwf{hmac}(\var{initN}, \kwf{G2bit}(\var{ephemeral{\_}pkA})))\ \kw{in}$\\
+\>$\quad \coutput{\kwc{c1}[\var{i}]}{\var{m1}};$\\
+\>$\quad \cinput{\kwc{c2}[\var{i}]}{\var{ephemeral{\_}pkX}: \kwt{G}, \var{hmacX}: \kwt{hmac{\_}key}};$\\
+\>$\quad \kw{if}\ (\var{hmacX}  =  \kwf{hmac}(\var{initN}, \kwf{G2bit}(\var{ephemeral{\_}pkX})))\ \kw{then}$\\
+\>$\quad \kw{event}\ \kwf{ClientConfirmNetwork}(\var{initN});$\\
+\>$\quad \kw{let}\ \var{key1A}: \kwt{G} = \{61\}\kwf{exp}(\var{ephemeral{\_}pkX}, \var{ephemeral{\_}skA})\ \kw{in}$\\
+\>$\quad \kw{let}\ \var{key2A}: \kwt{G} = \{67\}\kwf{exp}(\kwf{exp}(\kwf{g}, \var{initskB}), \var{ephemeral{\_}skA})\ \kw{in}$\\
+\>$\quad \kw{let}\ \var{secret1A}: \kwt{sym{\_}key} = \kwf{hash2key}(\kwf{hkey}, \kwf{}(\var{initN}, \var{key1A}, \var{key2A}))\ \kw{in}$\\
+\>$\quad \kw{let}\ \var{m}_{3}: \kwt{bitstring} = \{83\}\kwf{}(\var{initN}, \kwf{exp}(\kwf{g}, \var{initskB}), \kwf{hash}(\kwf{hkey}, \kwf{G2bit}(\var{key1A})))\ \kw{in}$\\
+\>$\quad \kw{new}\ \var{r}_{2}: \kwt{sign{\_}seed};$\\
+\>$\quad \kw{let}\ \var{sign{\_}A}: \kwt{bitstring} = \kwf{sign{\_}r}(\var{m}_{3}, \var{signAsk}, \var{r}_{2})\ \kw{in}$\\
+\>$\quad \kw{let}\ \var{m3}: \kwt{bitstring} = \kwf{secret{\_}box}(\kwf{}(\var{sign{\_}A}, \var{pkA}, \var{signApk}), \kwf{empty{\_}addata}, \var{secret1A}, \kwf{nonce0})\ \kw{in}$\\
+\>$\quad \coutput{\kwc{c3}[\var{i}]}{\var{m3}};$\\
+\>$\quad \cinput{\kwc{c4}[\var{i}]}{\var{m5}: \kwt{bitstring}};$\\
+\>$\quad \kw{let}\ \var{key3A}: \kwt{G} = \{122\}\kwf{exp}(\var{ephemeral{\_}pkX}, \var{initskA})\ \kw{in}$\\
+\>$\quad \kw{let}\ \var{secret2A}: \kwt{sym{\_}key} = \kwf{bit2symkey}(\kwf{}(\var{initN}, \var{key1A}, \var{key2A}, \var{key3A}))\ \kw{in}$\\
+\>$\quad \kw{let}\ \kwf{injbot}(\var{sign{\_}B}: \kwt{bitstring}) = \kwf{secret{\_}box{\_}open}(\var{m5}, \kwf{empty{\_}addata}, \var{secret2A}, \kwf{nonce0})\ \kw{in}$\\
+\>$\quad \kw{if}\ \kwf{check}(\kwf{}(\var{initN}, \var{sign{\_}A}, \var{pkA}, \kwf{hash}(\kwf{hkey}, \kwf{G2bit}(\var{key1A}))), \kwf{pkgen}(\var{initsignB}), \var{sign{\_}B})\ \kw{then}$\\
+\>$\quad \coutput{\kwc{c10}[\var{i}]}{\var{secret2A}};$\\
+\>$\quad \cinput{\kwc{finish}[\var{i}]}{};$\\
+\>$\quad \kw{event}\ \kwf{ClientEndSession}(\var{pkA}, \var{initN})$\\
+\>$) \mid ($\\
+\>$\quad !^{\var{i}_{1} \leq \kwp{N1}}$\\
+\>$\quad \cinput{\kwc{c5}[\var{i}_{1}]}{\var{ephemeral{\_}pkY}: \kwt{G}, \var{hmacY}: \kwt{hmac{\_}key}};$\\
+\>$\quad \kw{let}\ \var{pkB}: \kwt{G} = \{195\}\kwf{exp}(\kwf{g}, \var{initskB})\ \kw{in}$\\
+\>$\quad \kw{let}\ \var{signBsk}: \kwt{skey} = \kwf{skgen}(\var{initsignB})\ \kw{in}$\\
+\>$\quad \kw{if}\ (\var{hmacY}  =  \kwf{hmac}(\var{initN}, \kwf{G2bit}(\var{ephemeral{\_}pkY})))\ \kw{then}$\\
+\>$\quad \kw{event}\ \kwf{ServerConfirmNetwork}(\var{initN});$\\
+\>$\quad \kw{new}\ \var{ephemeral{\_}skB}: \kwt{Z};$\\
+\>$\quad \kw{let}\ \var{ephemeral{\_}pkB}: \kwt{G} = \{217\}\kwf{exp}(\kwf{g}, \var{ephemeral{\_}skB})\ \kw{in}$\\
+\>$\quad \kw{let}\ \var{m2}: \kwt{bitstring} = \kwf{}(\var{ephemeral{\_}pkB}, \kwf{hmac}(\var{initN}, \kwf{G2bit}(\var{ephemeral{\_}pkB})))\ \kw{in}$\\
+\>$\quad \coutput{\kwc{c6}[\var{i}_{1}]}{\var{m2}};$\\
+\>$\quad \cinput{\kwc{c7}[\var{i}_{1}]}{\var{m4}: \kwt{bitstring}};$\\
+\>$\quad \kw{let}\ \var{key1B}: \kwt{G} = \{237\}\kwf{exp}(\var{ephemeral{\_}pkY}, \var{ephemeral{\_}skB})\ \kw{in}$\\
+\>$\quad \kw{let}\ \var{key2B}: \kwt{G} = \{243\}\kwf{exp}(\var{ephemeral{\_}pkY}, \var{initskB})\ \kw{in}$\\
+\>$\quad \kw{let}\ \var{secret1B}: \kwt{sym{\_}key} = \kwf{hash2key}(\kwf{hkey}, \kwf{}(\var{initN}, \var{key1B}, \var{key2B}))\ \kw{in}$\\
+\>$\quad \kw{let}\ \kwf{injbot}(\var{tuple}: \kwt{bitstring}) = \kwf{secret{\_}box{\_}open}(\var{m4}, \kwf{empty{\_}addata}, \var{secret1B}, \kwf{nonce0})\ \kw{in}$\\
+\>$\quad \kw{let}\ \kwf{}(\var{sign{\_}Y}: \kwt{bitstring}, \var{pkY}: \kwt{G}, \var{signYpk}: \kwt{pkey}) = \var{tuple}\ \kw{in}$\\
+\>$\quad \kw{if}\ (\var{signYpk}  =  \kwf{pkgen}(\var{initsignA}))\ \kw{then}$\\
+\>$\quad \kw{if}\ \kwf{check}(\kwf{}(\var{initN}, \var{pkB}, \kwf{hash}(\kwf{hkey}, \kwf{G2bit}(\var{key1B}))), \var{signYpk}, \var{sign{\_}Y})\ \kw{then}$\\
+\>$\quad \kw{let}\ \var{key3B}: \kwt{G} = \{289\}\kwf{exp}(\var{pkY}, \var{ephemeral{\_}skB})\ \kw{in}$\\
+\>$\quad \kw{let}\ \var{secret2B}: \kwt{sym{\_}key} = \kwf{hash2key}(\kwf{hkey}, \kwf{}(\var{initN}, \var{key1B}, \var{key2B}, \var{key3B}))\ \kw{in}$\\
+\>$\quad \kw{let}\ \var{m}_{4}: \kwt{bitstring} = \kwf{}(\var{initN}, \var{sign{\_}Y}, \var{pkY}, \kwf{hash}(\kwf{hkey}, \kwf{G2bit}(\var{key1B})))\ \kw{in}$\\
+\>$\quad \kw{new}\ \var{r}_{3}: \kwt{sign{\_}seed};$\\
+\>$\quad \kw{let}\ \var{m6}: \kwt{bitstring} = \kwf{secret{\_}box}(\kwf{sign{\_}r}(\var{m}_{4}, \var{signBsk}, \var{r}_{3}), \kwf{empty{\_}addata}, \var{secret2B}, \kwf{nonce0})\ \kw{in}$\\
+\>$\quad \kw{event}\ \kwf{ServerAccept}(\var{pkY});$\\
+\>$\quad \coutput{\kwc{c8}[\var{i}_{1}]}{\var{m6}};$\\
+\>$\quad \cinput{\kwc{c11}[\var{i}_{1}]}{\var{m8}: \kwt{sym{\_}key}};$\\
+\>$\quad \kw{if}\ (\var{m8}  =  \var{secret2B})\ \kw{then}$\\
+\>$\quad \kw{event}\ \kwf{ServerEndSession}(\var{pkB}, \var{initN})$\\
+\>$)$\\
+\\
+\\
+Applying simplify\\
+\quad -- Simplification pass\\
+\qquad -- Replaced $\kwf{exp}(\kwf{g}, \var{initskB})$ with $\kwf{G8{\_}to{\_}G}(\kwf{exp{\_}div8}(\kwf{g8}, \var{initskB}))$ at 195\\
+\qquad -- Replaced $\kwf{exp}(\kwf{g}, \var{ephemeral{\_}skB})$ with $\kwf{G8{\_}to{\_}G}(\kwf{exp{\_}div8}(\kwf{g8}, \var{ephemeral{\_}skB}))$ at 217\\
+\qquad -- Replaced $\kwf{exp}(\var{ephemeral{\_}pkY}, \var{ephemeral{\_}skB})$ with $\kwf{G8{\_}to{\_}G}(\kwf{exp{\_}div8}(\kwf{pow8}(\var{ephemeral{\_}pkY}), \var{ephemeral{\_}skB}))$ at 237\\
+\qquad -- Replaced $\kwf{exp}(\var{ephemeral{\_}pkY}, \var{initskB})$ with $\kwf{G8{\_}to{\_}G}(\kwf{exp{\_}div8}(\kwf{pow8}(\var{ephemeral{\_}pkY}), \var{initskB}))$ at 243\\
+\qquad -- Replaced $\kwf{exp}(\var{pkY}, \var{ephemeral{\_}skB})$ with $\kwf{G8{\_}to{\_}G}(\kwf{exp{\_}div8}(\kwf{pow8}(\var{pkY}), \var{ephemeral{\_}skB}))$ at 289\\
+\qquad -- Replaced $\kwf{exp}(\kwf{g}, \var{initskA})$ with $\kwf{G8{\_}to{\_}G}(\kwf{exp{\_}div8}(\kwf{g8}, \var{initskA}))$ at 16\\
+\qquad -- Replaced $\kwf{exp}(\kwf{g}, \var{ephemeral{\_}skA})$ with $\kwf{G8{\_}to{\_}G}(\kwf{exp{\_}div8}(\kwf{g8}, \var{ephemeral{\_}skA}))$ at 27\\
+\qquad -- Replaced $\kwf{exp}(\var{ephemeral{\_}pkX}, \var{ephemeral{\_}skA})$ with $\kwf{G8{\_}to{\_}G}(\kwf{exp{\_}div8}(\kwf{pow8}(\var{ephemeral{\_}pkX}), \var{ephemeral{\_}skA}))$ at 61\\
+\qquad -- Replaced $\kwf{exp}(\kwf{exp}(\kwf{g}, \var{initskB}), \var{ephemeral{\_}skA})$ with $\kwf{G8{\_}to{\_}G}(\kwf{exp{\_}div8}(\kwf{g8}, \kwf{mult}(\var{initskB}, \var{ephemeral{\_}skA})))$ at 67\\
+\qquad -- Replaced $\kwf{}(\var{initN}, \kwf{exp}(\kwf{g}, \var{initskB}), \kwf{hash}(\kwf{hkey}, \kwf{G2bit}(\var{key1A})))$ with $\kwf{}(\var{initN}, \kwf{G8{\_}to{\_}G}(\kwf{exp{\_}div8}(\kwf{g8}, \var{initskB})), \kwf{hash}(\kwf{hkey}, \kwf{G2bit}(\var{key1A})))$ at 83\\
+\qquad -- Replaced $\kwf{exp}(\var{ephemeral{\_}pkX}, \var{initskA})$ with $\kwf{G8{\_}to{\_}G}(\kwf{exp{\_}div8}(\kwf{pow8}(\var{ephemeral{\_}pkX}), \var{initskA}))$ at 122\\
+\qquad -- Remove random number generation at 891\\
+\qquad -- Remove random number generation at 7\\
+yields\\
+\\
+Game -1 is\\
+\>$\cinput{\kwc{start}}{};$\\
+\>$\kw{new}\ \var{initN}: \kwt{hmac{\_}key};$\\
+\>$\kw{new}\ \var{initsignA}: \kwt{seed};$\\
+\>$\kw{new}\ \var{initsignB}: \kwt{seed};$\\
+\>$\kw{new}\ \var{initskA}: \kwt{Z};$\\
+\>$\kw{new}\ \var{initskB}: \kwt{Z};$\\
+\>$\coutput{\kwc{begin}}{\kwf{nonce0}};$\\
+\>$($\\
+\>$\quad !^{\var{i} \leq \kwp{N1}}$\\
+\>$\quad \cinput{\kwc{c9}[\var{i}]}{};$\\
+\>$\quad \kw{let}\ \var{pkA}: \kwt{G} = \kwf{G8{\_}to{\_}G}(\kwf{exp{\_}div8}(\kwf{g8}, \var{initskA}))\ \kw{in}$\\
+\>$\quad \kw{let}\ \var{signAsk}: \kwt{skey} = \kwf{skgen}(\var{initsignA})\ \kw{in}$\\
+\>$\quad \kw{let}\ \var{signApk}: \kwt{pkey} = \kwf{pkgen}(\var{initsignA})\ \kw{in}$\\
+\>$\quad \kw{new}\ \var{ephemeral{\_}skA}: \kwt{Z};$\\
+\>$\quad \kw{let}\ \var{ephemeral{\_}pkA}: \kwt{G} = \kwf{G8{\_}to{\_}G}(\kwf{exp{\_}div8}(\kwf{g8}, \var{ephemeral{\_}skA}))\ \kw{in}$\\
+\>$\quad \kw{let}\ \var{m1}: \kwt{bitstring} = \kwf{}(\var{ephemeral{\_}pkA}, \kwf{hmac}(\var{initN}, \kwf{G2bit}(\var{ephemeral{\_}pkA})))\ \kw{in}$\\
+\>$\quad \coutput{\kwc{c1}[\var{i}]}{\var{m1}};$\\
+\>$\quad \cinput{\kwc{c2}[\var{i}]}{\var{ephemeral{\_}pkX}: \kwt{G}, \var{hmacX}: \kwt{hmac{\_}key}};$\\
+\>$\quad \kw{if}\ (\var{hmacX}  =  \kwf{hmac}(\var{initN}, \kwf{G2bit}(\var{ephemeral{\_}pkX})))\ \kw{then}$\\
+\>$\quad \kw{event}\ \kwf{ClientConfirmNetwork}(\var{initN});$\\
+\>$\quad \kw{let}\ \var{key1A}: \kwt{G} = \kwf{G8{\_}to{\_}G}(\kwf{exp{\_}div8}(\kwf{pow8}(\var{ephemeral{\_}pkX}), \var{ephemeral{\_}skA}))\ \kw{in}$\\
+\>$\quad \kw{let}\ \var{key2A}: \kwt{G} = \kwf{G8{\_}to{\_}G}(\kwf{exp{\_}div8}(\kwf{g8}, \kwf{mult}(\var{initskB}, \var{ephemeral{\_}skA})))\ \kw{in}$\\
+\>$\quad \kw{let}\ \var{secret1A}: \kwt{sym{\_}key} = \kwf{hash2key}(\kwf{hkey}, \kwf{}(\var{initN}, \var{key1A}, \var{key2A}))\ \kw{in}$\\
+\>$\quad \kw{let}\ \var{m}_{3}: \kwt{bitstring} = \kwf{}(\var{initN}, \kwf{G8{\_}to{\_}G}(\kwf{exp{\_}div8}(\kwf{g8}, \var{initskB})), \kwf{hash}(\kwf{hkey}, \kwf{G2bit}(\var{key1A})))\ \kw{in}$\\
+\>$\quad \kw{new}\ \var{r}_{2}: \kwt{sign{\_}seed};$\\
+\>$\quad \kw{let}\ \var{sign{\_}A}: \kwt{bitstring} = \kwf{sign{\_}r}(\var{m}_{3}, \var{signAsk}, \var{r}_{2})\ \kw{in}$\\
+\>$\quad \kw{let}\ \var{m3}: \kwt{bitstring} = \kwf{secret{\_}box}(\kwf{}(\var{sign{\_}A}, \var{pkA}, \var{signApk}), \kwf{empty{\_}addata}, \var{secret1A}, \kwf{nonce0})\ \kw{in}$\\
+\>$\quad \coutput{\kwc{c3}[\var{i}]}{\var{m3}};$\\
+\>$\quad \cinput{\kwc{c4}[\var{i}]}{\var{m5}: \kwt{bitstring}};$\\
+\>$\quad \kw{let}\ \var{key3A}: \kwt{G} = \kwf{G8{\_}to{\_}G}(\kwf{exp{\_}div8}(\kwf{pow8}(\var{ephemeral{\_}pkX}), \var{initskA}))\ \kw{in}$\\
+\>$\quad \kw{let}\ \var{secret2A}: \kwt{sym{\_}key} = \kwf{bit2symkey}(\kwf{}(\var{initN}, \var{key1A}, \var{key2A}, \var{key3A}))\ \kw{in}$\\
+\>$\quad \kw{let}\ \kwf{injbot}(\var{sign{\_}B}: \kwt{bitstring}) = \kwf{secret{\_}box{\_}open}(\var{m5}, \kwf{empty{\_}addata}, \var{secret2A}, \kwf{nonce0})\ \kw{in}$\\
+\>$\quad \kw{if}\ \kwf{check}(\kwf{}(\var{initN}, \var{sign{\_}A}, \var{pkA}, \kwf{hash}(\kwf{hkey}, \kwf{G2bit}(\var{key1A}))), \kwf{pkgen}(\var{initsignB}), \var{sign{\_}B})\ \kw{then}$\\
+\>$\quad \coutput{\kwc{c10}[\var{i}]}{\var{secret2A}};$\\
+\>$\quad \cinput{\kwc{finish}[\var{i}]}{};$\\
+\>$\quad \kw{event}\ \kwf{ClientEndSession}(\var{pkA}, \var{initN})$\\
+\>$) \mid ($\\
+\>$\quad !^{\var{i}_{1} \leq \kwp{N1}}$\\
+\>$\quad \cinput{\kwc{c5}[\var{i}_{1}]}{\var{ephemeral{\_}pkY}: \kwt{G}, \var{hmacY}: \kwt{hmac{\_}key}};$\\
+\>$\quad \kw{let}\ \var{pkB}: \kwt{G} = \kwf{G8{\_}to{\_}G}(\kwf{exp{\_}div8}(\kwf{g8}, \var{initskB}))\ \kw{in}$\\
+\>$\quad \kw{let}\ \var{signBsk}: \kwt{skey} = \kwf{skgen}(\var{initsignB})\ \kw{in}$\\
+\>$\quad \kw{if}\ (\var{hmacY}  =  \kwf{hmac}(\var{initN}, \kwf{G2bit}(\var{ephemeral{\_}pkY})))\ \kw{then}$\\
+\>$\quad \kw{event}\ \kwf{ServerConfirmNetwork}(\var{initN});$\\
+\>$\quad \kw{new}\ \var{ephemeral{\_}skB}: \kwt{Z};$\\
+\>$\quad \kw{let}\ \var{ephemeral{\_}pkB}: \kwt{G} = \kwf{G8{\_}to{\_}G}(\kwf{exp{\_}div8}(\kwf{g8}, \var{ephemeral{\_}skB}))\ \kw{in}$\\
+\>$\quad \kw{let}\ \var{m2}: \kwt{bitstring} = \kwf{}(\var{ephemeral{\_}pkB}, \kwf{hmac}(\var{initN}, \kwf{G2bit}(\var{ephemeral{\_}pkB})))\ \kw{in}$\\
+\>$\quad \coutput{\kwc{c6}[\var{i}_{1}]}{\var{m2}};$\\
+\>$\quad \cinput{\kwc{c7}[\var{i}_{1}]}{\var{m4}: \kwt{bitstring}};$\\
+\>$\quad \kw{let}\ \var{key1B}: \kwt{G} = \kwf{G8{\_}to{\_}G}(\kwf{exp{\_}div8}(\kwf{pow8}(\var{ephemeral{\_}pkY}), \var{ephemeral{\_}skB}))\ \kw{in}$\\
+\>$\quad \kw{let}\ \var{key2B}: \kwt{G} = \kwf{G8{\_}to{\_}G}(\kwf{exp{\_}div8}(\kwf{pow8}(\var{ephemeral{\_}pkY}), \var{initskB}))\ \kw{in}$\\
+\>$\quad \kw{let}\ \var{secret1B}: \kwt{sym{\_}key} = \kwf{hash2key}(\kwf{hkey}, \kwf{}(\var{initN}, \var{key1B}, \var{key2B}))\ \kw{in}$\\
+\>$\quad \kw{let}\ \kwf{injbot}(\var{tuple}: \kwt{bitstring}) = \kwf{secret{\_}box{\_}open}(\var{m4}, \kwf{empty{\_}addata}, \var{secret1B}, \kwf{nonce0})\ \kw{in}$\\
+\>$\quad \kw{let}\ \kwf{}(\var{sign{\_}Y}: \kwt{bitstring}, \var{pkY}: \kwt{G}, \var{signYpk}: \kwt{pkey}) = \var{tuple}\ \kw{in}$\\
+\>$\quad \kw{if}\ (\var{signYpk}  =  \kwf{pkgen}(\var{initsignA}))\ \kw{then}$\\
+\>$\quad \kw{if}\ \kwf{check}(\kwf{}(\var{initN}, \var{pkB}, \kwf{hash}(\kwf{hkey}, \kwf{G2bit}(\var{key1B}))), \var{signYpk}, \var{sign{\_}Y})\ \kw{then}$\\
+\>$\quad \kw{let}\ \var{key3B}: \kwt{G} = \kwf{G8{\_}to{\_}G}(\kwf{exp{\_}div8}(\kwf{pow8}(\var{pkY}), \var{ephemeral{\_}skB}))\ \kw{in}$\\
+\>$\quad \kw{let}\ \var{secret2B}: \kwt{sym{\_}key} = \kwf{hash2key}(\kwf{hkey}, \kwf{}(\var{initN}, \var{key1B}, \var{key2B}, \var{key3B}))\ \kw{in}$\\
+\>$\quad \kw{let}\ \var{m}_{4}: \kwt{bitstring} = \kwf{}(\var{initN}, \var{sign{\_}Y}, \var{pkY}, \kwf{hash}(\kwf{hkey}, \kwf{G2bit}(\var{key1B})))\ \kw{in}$\\
+\>$\quad \kw{new}\ \var{r}_{3}: \kwt{sign{\_}seed};$\\
+\>$\quad \kw{let}\ \var{m6}: \kwt{bitstring} = \kwf{secret{\_}box}(\kwf{sign{\_}r}(\var{m}_{4}, \var{signBsk}, \var{r}_{3}), \kwf{empty{\_}addata}, \var{secret2B}, \kwf{nonce0})\ \kw{in}$\\
+\>$\quad \kw{event}\ \kwf{ServerAccept}(\var{pkY});$\\
+\>$\quad \coutput{\kwc{c8}[\var{i}_{1}]}{\var{m6}};$\\
+\>$\quad \cinput{\kwc{c11}[\var{i}_{1}]}{\var{m8}: \kwt{sym{\_}key}};$\\
+\>$\quad \kw{if}\ (\var{m8}  =  \var{secret2B})\ \kw{then}$\\
+\>$\quad \kw{event}\ \kwf{ServerEndSession}(\var{pkB}, \var{initN})$\\
+\>$)$\\
+\\
+\\
+Applying move\ all\ binders\\
+\quad -- Move assignment to $\var{signBsk}$\\
+\quad -- Move assignment to $\var{pkB}$\\
+\quad -- Move assignment to $\var{signApk}$\\
+\quad -- Move assignment to $\var{signAsk}$\\
+\quad -- Move assignment to $\var{pkA}$\\
+yields\\
+\\
+Game -1 is\\
+\>$\cinput{\kwc{start}}{};$\\
+\>$\kw{new}\ \var{initN}: \kwt{hmac{\_}key};$\\
+\>$\kw{new}\ \var{initsignA}: \kwt{seed};$\\
+\>$\kw{new}\ \var{initsignB}: \kwt{seed};$\\
+\>$\kw{new}\ \var{initskA}: \kwt{Z};$\\
+\>$\kw{new}\ \var{initskB}: \kwt{Z};$\\
+\>$\coutput{\kwc{begin}}{\kwf{nonce0}};$\\
+\>$($\\
+\>$\quad !^{\var{i} \leq \kwp{N1}}$\\
+\>$\quad \cinput{\kwc{c9}[\var{i}]}{};$\\
+\>$\quad \kw{new}\ \var{ephemeral{\_}skA}: \kwt{Z};$\\
+\>$\quad \kw{let}\ \var{ephemeral{\_}pkA}: \kwt{G} = \kwf{G8{\_}to{\_}G}(\kwf{exp{\_}div8}(\kwf{g8}, \var{ephemeral{\_}skA}))\ \kw{in}$\\
+\>$\quad \kw{let}\ \var{m1}: \kwt{bitstring} = \kwf{}(\var{ephemeral{\_}pkA}, \kwf{hmac}(\var{initN}, \kwf{G2bit}(\var{ephemeral{\_}pkA})))\ \kw{in}$\\
+\>$\quad \coutput{\kwc{c1}[\var{i}]}{\var{m1}};$\\
+\>$\quad \cinput{\kwc{c2}[\var{i}]}{\var{ephemeral{\_}pkX}: \kwt{G}, \var{hmacX}: \kwt{hmac{\_}key}};$\\
+\>$\quad \kw{if}\ (\var{hmacX}  =  \kwf{hmac}(\var{initN}, \kwf{G2bit}(\var{ephemeral{\_}pkX})))\ \kw{then}$\\
+\>$\quad \kw{event}\ \kwf{ClientConfirmNetwork}(\var{initN});$\\
+\>$\quad \kw{let}\ \var{key1A}: \kwt{G} = \kwf{G8{\_}to{\_}G}(\kwf{exp{\_}div8}(\kwf{pow8}(\var{ephemeral{\_}pkX}), \var{ephemeral{\_}skA}))\ \kw{in}$\\
+\>$\quad \kw{let}\ \var{key2A}: \kwt{G} = \kwf{G8{\_}to{\_}G}(\kwf{exp{\_}div8}(\kwf{g8}, \kwf{mult}(\var{initskB}, \var{ephemeral{\_}skA})))\ \kw{in}$\\
+\>$\quad \kw{let}\ \var{secret1A}: \kwt{sym{\_}key} = \kwf{hash2key}(\kwf{hkey}, \kwf{}(\var{initN}, \var{key1A}, \var{key2A}))\ \kw{in}$\\
+\>$\quad \kw{let}\ \var{m}_{3}: \kwt{bitstring} = \kwf{}(\var{initN}, \kwf{G8{\_}to{\_}G}(\kwf{exp{\_}div8}(\kwf{g8}, \var{initskB})), \kwf{hash}(\kwf{hkey}, \kwf{G2bit}(\var{key1A})))\ \kw{in}$\\
+\>$\quad \kw{new}\ \var{r}_{2}: \kwt{sign{\_}seed};$\\
+\>$\quad \kw{let}\ \var{signAsk}: \kwt{skey} = \kwf{skgen}(\var{initsignA})\ \kw{in}$\\
+\>$\quad \kw{let}\ \var{sign{\_}A}: \kwt{bitstring} = \kwf{sign{\_}r}(\var{m}_{3}, \var{signAsk}, \var{r}_{2})\ \kw{in}$\\
+\>$\quad \kw{let}\ \var{signApk}: \kwt{pkey} = \kwf{pkgen}(\var{initsignA})\ \kw{in}$\\
+\>$\quad \kw{let}\ \var{pkA}: \kwt{G} = \kwf{G8{\_}to{\_}G}(\kwf{exp{\_}div8}(\kwf{g8}, \var{initskA}))\ \kw{in}$\\
+\>$\quad \kw{let}\ \var{m3}: \kwt{bitstring} = \kwf{secret{\_}box}(\kwf{}(\var{sign{\_}A}, \var{pkA}, \var{signApk}), \kwf{empty{\_}addata}, \var{secret1A}, \kwf{nonce0})\ \kw{in}$\\
+\>$\quad \coutput{\kwc{c3}[\var{i}]}{\var{m3}};$\\
+\>$\quad \cinput{\kwc{c4}[\var{i}]}{\var{m5}: \kwt{bitstring}};$\\
+\>$\quad \kw{let}\ \var{key3A}: \kwt{G} = \kwf{G8{\_}to{\_}G}(\kwf{exp{\_}div8}(\kwf{pow8}(\var{ephemeral{\_}pkX}), \var{initskA}))\ \kw{in}$\\
+\>$\quad \kw{let}\ \var{secret2A}: \kwt{sym{\_}key} = \kwf{bit2symkey}(\kwf{}(\var{initN}, \var{key1A}, \var{key2A}, \var{key3A}))\ \kw{in}$\\
+\>$\quad \kw{let}\ \kwf{injbot}(\var{sign{\_}B}: \kwt{bitstring}) = \kwf{secret{\_}box{\_}open}(\var{m5}, \kwf{empty{\_}addata}, \var{secret2A}, \kwf{nonce0})\ \kw{in}$\\
+\>$\quad \kw{if}\ \kwf{check}(\kwf{}(\var{initN}, \var{sign{\_}A}, \var{pkA}, \kwf{hash}(\kwf{hkey}, \kwf{G2bit}(\var{key1A}))), \kwf{pkgen}(\var{initsignB}), \var{sign{\_}B})\ \kw{then}$\\
+\>$\quad \coutput{\kwc{c10}[\var{i}]}{\var{secret2A}};$\\
+\>$\quad \cinput{\kwc{finish}[\var{i}]}{};$\\
+\>$\quad \kw{event}\ \kwf{ClientEndSession}(\var{pkA}, \var{initN})$\\
+\>$) \mid ($\\
+\>$\quad !^{\var{i}_{1} \leq \kwp{N1}}$\\
+\>$\quad \cinput{\kwc{c5}[\var{i}_{1}]}{\var{ephemeral{\_}pkY}: \kwt{G}, \var{hmacY}: \kwt{hmac{\_}key}};$\\
+\>$\quad \kw{if}\ (\var{hmacY}  =  \kwf{hmac}(\var{initN}, \kwf{G2bit}(\var{ephemeral{\_}pkY})))\ \kw{then}$\\
+\>$\quad \kw{event}\ \kwf{ServerConfirmNetwork}(\var{initN});$\\
+\>$\quad \kw{new}\ \var{ephemeral{\_}skB}: \kwt{Z};$\\
+\>$\quad \kw{let}\ \var{ephemeral{\_}pkB}: \kwt{G} = \kwf{G8{\_}to{\_}G}(\kwf{exp{\_}div8}(\kwf{g8}, \var{ephemeral{\_}skB}))\ \kw{in}$\\
+\>$\quad \kw{let}\ \var{m2}: \kwt{bitstring} = \kwf{}(\var{ephemeral{\_}pkB}, \kwf{hmac}(\var{initN}, \kwf{G2bit}(\var{ephemeral{\_}pkB})))\ \kw{in}$\\
+\>$\quad \coutput{\kwc{c6}[\var{i}_{1}]}{\var{m2}};$\\
+\>$\quad \cinput{\kwc{c7}[\var{i}_{1}]}{\var{m4}: \kwt{bitstring}};$\\
+\>$\quad \kw{let}\ \var{key1B}: \kwt{G} = \kwf{G8{\_}to{\_}G}(\kwf{exp{\_}div8}(\kwf{pow8}(\var{ephemeral{\_}pkY}), \var{ephemeral{\_}skB}))\ \kw{in}$\\
+\>$\quad \kw{let}\ \var{key2B}: \kwt{G} = \kwf{G8{\_}to{\_}G}(\kwf{exp{\_}div8}(\kwf{pow8}(\var{ephemeral{\_}pkY}), \var{initskB}))\ \kw{in}$\\
+\>$\quad \kw{let}\ \var{secret1B}: \kwt{sym{\_}key} = \kwf{hash2key}(\kwf{hkey}, \kwf{}(\var{initN}, \var{key1B}, \var{key2B}))\ \kw{in}$\\
+\>$\quad \kw{let}\ \kwf{injbot}(\var{tuple}: \kwt{bitstring}) = \kwf{secret{\_}box{\_}open}(\var{m4}, \kwf{empty{\_}addata}, \var{secret1B}, \kwf{nonce0})\ \kw{in}$\\
+\>$\quad \kw{let}\ \kwf{}(\var{sign{\_}Y}: \kwt{bitstring}, \var{pkY}: \kwt{G}, \var{signYpk}: \kwt{pkey}) = \var{tuple}\ \kw{in}$\\
+\>$\quad \kw{if}\ (\var{signYpk}  =  \kwf{pkgen}(\var{initsignA}))\ \kw{then}$\\
+\>$\quad \kw{let}\ \var{pkB}: \kwt{G} = \kwf{G8{\_}to{\_}G}(\kwf{exp{\_}div8}(\kwf{g8}, \var{initskB}))\ \kw{in}$\\
+\>$\quad \kw{if}\ \kwf{check}(\kwf{}(\var{initN}, \var{pkB}, \kwf{hash}(\kwf{hkey}, \kwf{G2bit}(\var{key1B}))), \var{signYpk}, \var{sign{\_}Y})\ \kw{then}$\\
+\>$\quad \kw{let}\ \var{key3B}: \kwt{G} = \kwf{G8{\_}to{\_}G}(\kwf{exp{\_}div8}(\kwf{pow8}(\var{pkY}), \var{ephemeral{\_}skB}))\ \kw{in}$\\
+\>$\quad \kw{let}\ \var{secret2B}: \kwt{sym{\_}key} = \kwf{hash2key}(\kwf{hkey}, \kwf{}(\var{initN}, \var{key1B}, \var{key2B}, \var{key3B}))\ \kw{in}$\\
+\>$\quad \kw{let}\ \var{m}_{4}: \kwt{bitstring} = \kwf{}(\var{initN}, \var{sign{\_}Y}, \var{pkY}, \kwf{hash}(\kwf{hkey}, \kwf{G2bit}(\var{key1B})))\ \kw{in}$\\
+\>$\quad \kw{new}\ \var{r}_{3}: \kwt{sign{\_}seed};$\\
+\>$\quad \kw{let}\ \var{signBsk}: \kwt{skey} = \kwf{skgen}(\var{initsignB})\ \kw{in}$\\
+\>$\quad \kw{let}\ \var{m6}: \kwt{bitstring} = \kwf{secret{\_}box}(\kwf{sign{\_}r}(\var{m}_{4}, \var{signBsk}, \var{r}_{3}), \kwf{empty{\_}addata}, \var{secret2B}, \kwf{nonce0})\ \kw{in}$\\
+\>$\quad \kw{event}\ \kwf{ServerAccept}(\var{pkY});$\\
+\>$\quad \coutput{\kwc{c8}[\var{i}_{1}]}{\var{m6}};$\\
+\>$\quad \cinput{\kwc{c11}[\var{i}_{1}]}{\var{m8}: \kwt{sym{\_}key}};$\\
+\>$\quad \kw{if}\ (\var{m8}  =  \var{secret2B})\ \kw{then}$\\
+\>$\quad \kw{event}\ \kwf{ServerEndSession}(\var{pkB}, \var{initN})$\\
+\>$)$\\
+\\
+\\
+Applying remove assignments of binder $\var{signBsk}$\\
+\quad -- Remove assignments on $\var{signBsk}$ (definition removed, all usages removed)\\
+yields\\
+\\
+Game -1 is\\
+\>$\cinput{\kwc{start}}{};$\\
+\>$\kw{new}\ \var{initN}: \kwt{hmac{\_}key};$\\
+\>$\kw{new}\ \var{initsignA}: \kwt{seed};$\\
+\>$\kw{new}\ \var{initsignB}: \kwt{seed};$\\
+\>$\kw{new}\ \var{initskA}: \kwt{Z};$\\
+\>$\kw{new}\ \var{initskB}: \kwt{Z};$\\
+\>$\coutput{\kwc{begin}}{\kwf{nonce0}};$\\
+\>$($\\
+\>$\quad !^{\var{i} \leq \kwp{N1}}$\\
+\>$\quad \cinput{\kwc{c9}[\var{i}]}{};$\\
+\>$\quad \kw{new}\ \var{ephemeral{\_}skA}: \kwt{Z};$\\
+\>$\quad \kw{let}\ \var{ephemeral{\_}pkA}: \kwt{G} = \kwf{G8{\_}to{\_}G}(\kwf{exp{\_}div8}(\kwf{g8}, \var{ephemeral{\_}skA}))\ \kw{in}$\\
+\>$\quad \kw{let}\ \var{m1}: \kwt{bitstring} = \kwf{}(\var{ephemeral{\_}pkA}, \kwf{hmac}(\var{initN}, \kwf{G2bit}(\var{ephemeral{\_}pkA})))\ \kw{in}$\\
+\>$\quad \coutput{\kwc{c1}[\var{i}]}{\var{m1}};$\\
+\>$\quad \cinput{\kwc{c2}[\var{i}]}{\var{ephemeral{\_}pkX}: \kwt{G}, \var{hmacX}: \kwt{hmac{\_}key}};$\\
+\>$\quad \kw{if}\ (\var{hmacX}  =  \kwf{hmac}(\var{initN}, \kwf{G2bit}(\var{ephemeral{\_}pkX})))\ \kw{then}$\\
+\>$\quad \kw{event}\ \kwf{ClientConfirmNetwork}(\var{initN});$\\
+\>$\quad \kw{let}\ \var{key1A}: \kwt{G} = \kwf{G8{\_}to{\_}G}(\kwf{exp{\_}div8}(\kwf{pow8}(\var{ephemeral{\_}pkX}), \var{ephemeral{\_}skA}))\ \kw{in}$\\
+\>$\quad \kw{let}\ \var{key2A}: \kwt{G} = \kwf{G8{\_}to{\_}G}(\kwf{exp{\_}div8}(\kwf{g8}, \kwf{mult}(\var{initskB}, \var{ephemeral{\_}skA})))\ \kw{in}$\\
+\>$\quad \kw{let}\ \var{secret1A}: \kwt{sym{\_}key} = \kwf{hash2key}(\kwf{hkey}, \kwf{}(\var{initN}, \var{key1A}, \var{key2A}))\ \kw{in}$\\
+\>$\quad \kw{let}\ \var{m}_{3}: \kwt{bitstring} = \kwf{}(\var{initN}, \kwf{G8{\_}to{\_}G}(\kwf{exp{\_}div8}(\kwf{g8}, \var{initskB})), \kwf{hash}(\kwf{hkey}, \kwf{G2bit}(\var{key1A})))\ \kw{in}$\\
+\>$\quad \kw{new}\ \var{r}_{2}: \kwt{sign{\_}seed};$\\
+\>$\quad \kw{let}\ \var{signAsk}: \kwt{skey} = \kwf{skgen}(\var{initsignA})\ \kw{in}$\\
+\>$\quad \kw{let}\ \var{sign{\_}A}: \kwt{bitstring} = \kwf{sign{\_}r}(\var{m}_{3}, \var{signAsk}, \var{r}_{2})\ \kw{in}$\\
+\>$\quad \kw{let}\ \var{signApk}: \kwt{pkey} = \kwf{pkgen}(\var{initsignA})\ \kw{in}$\\
+\>$\quad \kw{let}\ \var{pkA}: \kwt{G} = \kwf{G8{\_}to{\_}G}(\kwf{exp{\_}div8}(\kwf{g8}, \var{initskA}))\ \kw{in}$\\
+\>$\quad \kw{let}\ \var{m3}: \kwt{bitstring} = \kwf{secret{\_}box}(\kwf{}(\var{sign{\_}A}, \var{pkA}, \var{signApk}), \kwf{empty{\_}addata}, \var{secret1A}, \kwf{nonce0})\ \kw{in}$\\
+\>$\quad \coutput{\kwc{c3}[\var{i}]}{\var{m3}};$\\
+\>$\quad \cinput{\kwc{c4}[\var{i}]}{\var{m5}: \kwt{bitstring}};$\\
+\>$\quad \kw{let}\ \var{key3A}: \kwt{G} = \kwf{G8{\_}to{\_}G}(\kwf{exp{\_}div8}(\kwf{pow8}(\var{ephemeral{\_}pkX}), \var{initskA}))\ \kw{in}$\\
+\>$\quad \kw{let}\ \var{secret2A}: \kwt{sym{\_}key} = \kwf{bit2symkey}(\kwf{}(\var{initN}, \var{key1A}, \var{key2A}, \var{key3A}))\ \kw{in}$\\
+\>$\quad \kw{let}\ \kwf{injbot}(\var{sign{\_}B}: \kwt{bitstring}) = \kwf{secret{\_}box{\_}open}(\var{m5}, \kwf{empty{\_}addata}, \var{secret2A}, \kwf{nonce0})\ \kw{in}$\\
+\>\{150\}\'$\quad \kw{if}\ \kwf{check}(\kwf{}(\var{initN}, \var{sign{\_}A}, \var{pkA}, \kwf{hash}(\kwf{hkey}, \kwf{G2bit}(\var{key1A}))), \kwf{pkgen}(\var{initsignB}), \var{sign{\_}B})\ \kw{then}$\\
+\>$\quad \coutput{\kwc{c10}[\var{i}]}{\var{secret2A}};$\\
+\>$\quad \cinput{\kwc{finish}[\var{i}]}{};$\\
+\>$\quad \kw{event}\ \kwf{ClientEndSession}(\var{pkA}, \var{initN})$\\
+\>$) \mid ($\\
+\>$\quad !^{\var{i}_{1} \leq \kwp{N1}}$\\
+\>$\quad \cinput{\kwc{c5}[\var{i}_{1}]}{\var{ephemeral{\_}pkY}: \kwt{G}, \var{hmacY}: \kwt{hmac{\_}key}};$\\
+\>$\quad \kw{if}\ (\var{hmacY}  =  \kwf{hmac}(\var{initN}, \kwf{G2bit}(\var{ephemeral{\_}pkY})))\ \kw{then}$\\
+\>$\quad \kw{event}\ \kwf{ServerConfirmNetwork}(\var{initN});$\\
+\>$\quad \kw{new}\ \var{ephemeral{\_}skB}: \kwt{Z};$\\
+\>$\quad \kw{let}\ \var{ephemeral{\_}pkB}: \kwt{G} = \kwf{G8{\_}to{\_}G}(\kwf{exp{\_}div8}(\kwf{g8}, \var{ephemeral{\_}skB}))\ \kw{in}$\\
+\>$\quad \kw{let}\ \var{m2}: \kwt{bitstring} = \kwf{}(\var{ephemeral{\_}pkB}, \kwf{hmac}(\var{initN}, \kwf{G2bit}(\var{ephemeral{\_}pkB})))\ \kw{in}$\\
+\>$\quad \coutput{\kwc{c6}[\var{i}_{1}]}{\var{m2}};$\\
+\>$\quad \cinput{\kwc{c7}[\var{i}_{1}]}{\var{m4}: \kwt{bitstring}};$\\
+\>$\quad \kw{let}\ \var{key1B}: \kwt{G} = \kwf{G8{\_}to{\_}G}(\kwf{exp{\_}div8}(\kwf{pow8}(\var{ephemeral{\_}pkY}), \var{ephemeral{\_}skB}))\ \kw{in}$\\
+\>$\quad \kw{let}\ \var{key2B}: \kwt{G} = \kwf{G8{\_}to{\_}G}(\kwf{exp{\_}div8}(\kwf{pow8}(\var{ephemeral{\_}pkY}), \var{initskB}))\ \kw{in}$\\
+\>$\quad \kw{let}\ \var{secret1B}: \kwt{sym{\_}key} = \kwf{hash2key}(\kwf{hkey}, \kwf{}(\var{initN}, \var{key1B}, \var{key2B}))\ \kw{in}$\\
+\>$\quad \kw{let}\ \kwf{injbot}(\var{tuple}: \kwt{bitstring}) = \kwf{secret{\_}box{\_}open}(\var{m4}, \kwf{empty{\_}addata}, \var{secret1B}, \kwf{nonce0})\ \kw{in}$\\
+\>$\quad \kw{let}\ \kwf{}(\var{sign{\_}Y}: \kwt{bitstring}, \var{pkY}: \kwt{G}, \var{signYpk}: \kwt{pkey}) = \var{tuple}\ \kw{in}$\\
+\>$\quad \kw{if}\ (\var{signYpk}  =  \kwf{pkgen}(\var{initsignA}))\ \kw{then}$\\
+\>$\quad \kw{let}\ \var{pkB}: \kwt{G} = \kwf{G8{\_}to{\_}G}(\kwf{exp{\_}div8}(\kwf{g8}, \var{initskB}))\ \kw{in}$\\
+\>$\quad \kw{if}\ \kwf{check}(\kwf{}(\var{initN}, \var{pkB}, \kwf{hash}(\kwf{hkey}, \kwf{G2bit}(\var{key1B}))), \var{signYpk}, \var{sign{\_}Y})\ \kw{then}$\\
+\>$\quad \kw{let}\ \var{key3B}: \kwt{G} = \kwf{G8{\_}to{\_}G}(\kwf{exp{\_}div8}(\kwf{pow8}(\var{pkY}), \var{ephemeral{\_}skB}))\ \kw{in}$\\
+\>$\quad \kw{let}\ \var{secret2B}: \kwt{sym{\_}key} = \kwf{hash2key}(\kwf{hkey}, \kwf{}(\var{initN}, \var{key1B}, \var{key2B}, \var{key3B}))\ \kw{in}$\\
+\>$\quad \kw{let}\ \var{m}_{4}: \kwt{bitstring} = \kwf{}(\var{initN}, \var{sign{\_}Y}, \var{pkY}, \kwf{hash}(\kwf{hkey}, \kwf{G2bit}(\var{key1B})))\ \kw{in}$\\
+\>$\quad \kw{new}\ \var{r}_{3}: \kwt{sign{\_}seed};$\\
+\>$\quad \kw{let}\ \var{m6}: \kwt{bitstring} = \kwf{secret{\_}box}(\kwf{sign{\_}r}(\var{m}_{4}, \kwf{skgen}(\var{initsignB}), \var{r}_{3}), \kwf{empty{\_}addata}, \var{secret2B}, \kwf{nonce0})\ \kw{in}$\\
+\>$\quad \kw{event}\ \kwf{ServerAccept}(\var{pkY});$\\
+\>$\quad \coutput{\kwc{c8}[\var{i}_{1}]}{\var{m6}};$\\
+\>$\quad \cinput{\kwc{c11}[\var{i}_{1}]}{\var{m8}: \kwt{sym{\_}key}};$\\
+\>$\quad \kw{if}\ (\var{m8}  =  \var{secret2B})\ \kw{then}$\\
+\>$\quad \kw{event}\ \kwf{ServerEndSession}(\var{pkB}, \var{initN})$\\
+\>$)$\\
+\\
+\\
+Applying equivalence $\kwc{uf{\_}cma}(\kwf{sign})$ with $\var{initsignB}$ {}[probability $0.5 / |\kwt{hmac{\_}key}| + \var{Psigncoll} + \var{Psign}(\kw{time}(\mathit{context\ for\ game}\ -1) + \kw{time} + (-1. + 2. \times \kwp{N1}) \times \kw{time}(\kwf{check}, \kw{max}(\kw{length}((\kwt{hmac{\_}key}, \kwt{G}, \kwt{bitstring}), \allowbreak \kw{length}(\kwf{hash}, \allowbreak \kw{length}(\kwf{G2bit}))), \allowbreak \kw{length}((\kwt{hmac{\_}key}, \kwt{bitstring}, \kwt{G}, \kwt{bitstring}), \allowbreak \kw{maxlength}(\var{sign{\_}A}), \allowbreak \kw{length}(\kwf{hash}, \allowbreak \kw{length}(\kwf{G2bit})))), \allowbreak \kw{max}(\kw{maxlength}(\var{sign{\_}Y}), \allowbreak \kw{maxlength}(\var{sign{\_}B}))), \allowbreak \kwp{N1}, \allowbreak \kw{maxlength}(\var{m}_{4}))${}]{}\\
+\quad -- Equivalence $\kwc{uf{\_}cma}(\kwf{sign})$ with $\textrm{variables: }\var{r}_{3} \rightarrow \var{r2}, \var{initsignB} \rightarrow \var{r}$\\
+\quad -- Simplification pass\\
+\qquad -- Replaced $((\var{y}  =  \kwf{pkgen2}(\var{initsignB})) \wedge  (\var{m}  =  \var{x}[\var{ri}]) \wedge  \kwf{check2}(\var{m}, \var{y}, \var{si}))$ with $\kwf{false}$ at 979\\
+\qquad -- Remove branch 1 in find at 977\\
+\qquad -- Find at 977 removed (else branch kept if any)\\
+\qquad -- Replaced $(\var{y}  =  \kwf{pkgen2}(\var{initsignB}))$ with $\kwf{false}$ at 1000\\
+\qquad -- Remove branch 1 in find at 999\\
+\qquad -- Find at 999 removed (else branch kept if any)\\
+\quad -- Simplification pass\\
+\qquad -- Test at 150 always false\\
+\qquad -- Test at 150 always true\\
+\quad -- Expand if/find/let\\
+yields\\
+\\
+Game -1 is\\
+\>$\cinput{\kwc{start}}{};$\\
+\>$\kw{new}\ \var{initN}: \kwt{hmac{\_}key};$\\
+\>$\kw{new}\ \var{initsignA}: \kwt{seed};$\\
+\>$\kw{new}\ \var{initsignB}: \kwt{seed};$\\
+\>$\kw{new}\ \var{initskA}: \kwt{Z};$\\
+\>$\kw{new}\ \var{initskB}: \kwt{Z};$\\
+\>$\coutput{\kwc{begin}}{\kwf{nonce0}};$\\
+\>$($\\
+\>$\quad !^{\var{i} \leq \kwp{N1}}$\\
+\>$\quad \cinput{\kwc{c9}[\var{i}]}{};$\\
+\>$\quad \kw{new}\ \var{ephemeral{\_}skA}: \kwt{Z};$\\
+\>$\quad \kw{let}\ \var{ephemeral{\_}pkA}: \kwt{G} = \kwf{G8{\_}to{\_}G}(\kwf{exp{\_}div8}(\kwf{g8}, \var{ephemeral{\_}skA}))\ \kw{in}$\\
+\>$\quad \kw{let}\ \var{m1}: \kwt{bitstring} = \kwf{}(\var{ephemeral{\_}pkA}, \kwf{hmac}(\var{initN}, \kwf{G2bit}(\var{ephemeral{\_}pkA})))\ \kw{in}$\\
+\>$\quad \coutput{\kwc{c1}[\var{i}]}{\var{m1}};$\\
+\>$\quad \cinput{\kwc{c2}[\var{i}]}{\var{ephemeral{\_}pkX}: \kwt{G}, \var{hmacX}: \kwt{hmac{\_}key}};$\\
+\>$\quad \kw{if}\ (\var{hmacX}  =  \kwf{hmac}(\var{initN}, \kwf{G2bit}(\var{ephemeral{\_}pkX})))\ \kw{then}$\\
+\>$\quad \kw{event}\ \kwf{ClientConfirmNetwork}(\var{initN});$\\
+\>$\quad \kw{let}\ \var{key1A}: \kwt{G} = \kwf{G8{\_}to{\_}G}(\kwf{exp{\_}div8}(\kwf{pow8}(\var{ephemeral{\_}pkX}), \var{ephemeral{\_}skA}))\ \kw{in}$\\
+\>$\quad \kw{let}\ \var{key2A}: \kwt{G} = \kwf{G8{\_}to{\_}G}(\kwf{exp{\_}div8}(\kwf{g8}, \kwf{mult}(\var{initskB}, \var{ephemeral{\_}skA})))\ \kw{in}$\\
+\>$\quad \kw{let}\ \var{secret1A}: \kwt{sym{\_}key} = \kwf{hash2key}(\kwf{hkey}, \kwf{}(\var{initN}, \var{key1A}, \var{key2A}))\ \kw{in}$\\
+\>$\quad \kw{let}\ \var{m}_{3}: \kwt{bitstring} = \kwf{}(\var{initN}, \kwf{G8{\_}to{\_}G}(\kwf{exp{\_}div8}(\kwf{g8}, \var{initskB})), \kwf{hash}(\kwf{hkey}, \kwf{G2bit}(\var{key1A})))\ \kw{in}$\\
+\>$\quad \kw{new}\ \var{r}_{2}: \kwt{sign{\_}seed};$\\
+\>$\quad \kw{let}\ \var{signAsk}: \kwt{skey} = \kwf{skgen}(\var{initsignA})\ \kw{in}$\\
+\>$\quad \kw{let}\ \var{sign{\_}A}: \kwt{bitstring} = \kwf{sign{\_}r}(\var{m}_{3}, \var{signAsk}, \var{r}_{2})\ \kw{in}$\\
+\>$\quad \kw{let}\ \var{signApk}: \kwt{pkey} = \kwf{pkgen}(\var{initsignA})\ \kw{in}$\\
+\>$\quad \kw{let}\ \var{pkA}: \kwt{G} = \kwf{G8{\_}to{\_}G}(\kwf{exp{\_}div8}(\kwf{g8}, \var{initskA}))\ \kw{in}$\\
+\>$\quad \kw{let}\ \var{m3}: \kwt{bitstring} = \kwf{secret{\_}box}(\kwf{}(\var{sign{\_}A}, \var{pkA}, \var{signApk}), \kwf{empty{\_}addata}, \var{secret1A}, \kwf{nonce0})\ \kw{in}$\\
+\>$\quad \coutput{\kwc{c3}[\var{i}]}{\var{m3}};$\\
+\>$\quad \cinput{\kwc{c4}[\var{i}]}{\var{m5}: \kwt{bitstring}};$\\
+\>$\quad \kw{let}\ \var{key3A}: \kwt{G} = \kwf{G8{\_}to{\_}G}(\kwf{exp{\_}div8}(\kwf{pow8}(\var{ephemeral{\_}pkX}), \var{initskA}))\ \kw{in}$\\
+\>$\quad \kw{let}\ \var{secret2A}: \kwt{sym{\_}key} = \kwf{bit2symkey}(\kwf{}(\var{initN}, \var{key1A}, \var{key2A}, \var{key3A}))\ \kw{in}$\\
+\>$\quad \kw{let}\ \kwf{injbot}(\var{sign{\_}B}: \kwt{bitstring}) = \kwf{secret{\_}box{\_}open}(\var{m5}, \kwf{empty{\_}addata}, \var{secret2A}, \kwf{nonce0})\ \kw{in}$\\
+\>$\quad \kw{let}\ \var{m1}_{4}: \kwt{bitstring} = \kwf{}(\var{initN}, \var{sign{\_}A}, \var{pkA}, \kwf{hash}(\kwf{hkey}, \kwf{G2bit}(\var{key1A})))\ \kw{in}$\\
+\>$\quad \kw{let}\ \var{si1}: \kwt{bitstring} = \var{sign{\_}B}\ \kw{in}$\\
+\>$\quad \kw{find}\ \var{u}_{1} = \var{ri}_{1} \leq \kwp{N1}\ \kw{suchthat}\ \kw{defined}(\var{x}[\var{ri}_{1}])\wedge (\var{m1}_{4}  =  \var{x}[\var{ri}_{1}]) \wedge  \kwf{check2}(\var{m1}_{4}, \kwf{pkgen2}(\var{initsignB}), \var{si1})\ \kw{then}$\\
+\>$\quad \coutput{\kwc{c10}[\var{i}]}{\var{secret2A}};$\\
+\>$\quad \cinput{\kwc{finish}[\var{i}]}{};$\\
+\>$\quad \kw{event}\ \kwf{ClientEndSession}(\var{pkA}, \var{initN})$\\
+\>$) \mid ($\\
+\>$\quad !^{\var{i}_{1} \leq \kwp{N1}}$\\
+\>$\quad \cinput{\kwc{c5}[\var{i}_{1}]}{\var{ephemeral{\_}pkY}: \kwt{G}, \var{hmacY}: \kwt{hmac{\_}key}};$\\
+\>$\quad \kw{if}\ (\var{hmacY}  =  \kwf{hmac}(\var{initN}, \kwf{G2bit}(\var{ephemeral{\_}pkY})))\ \kw{then}$\\
+\>$\quad \kw{event}\ \kwf{ServerConfirmNetwork}(\var{initN});$\\
+\>$\quad \kw{new}\ \var{ephemeral{\_}skB}: \kwt{Z};$\\
+\>$\quad \kw{let}\ \var{ephemeral{\_}pkB}: \kwt{G} = \kwf{G8{\_}to{\_}G}(\kwf{exp{\_}div8}(\kwf{g8}, \var{ephemeral{\_}skB}))\ \kw{in}$\\
+\>$\quad \kw{let}\ \var{m2}: \kwt{bitstring} = \kwf{}(\var{ephemeral{\_}pkB}, \kwf{hmac}(\var{initN}, \kwf{G2bit}(\var{ephemeral{\_}pkB})))\ \kw{in}$\\
+\>$\quad \coutput{\kwc{c6}[\var{i}_{1}]}{\var{m2}};$\\
+\>$\quad \cinput{\kwc{c7}[\var{i}_{1}]}{\var{m4}: \kwt{bitstring}};$\\
+\>$\quad \kw{let}\ \var{key1B}: \kwt{G} = \kwf{G8{\_}to{\_}G}(\kwf{exp{\_}div8}(\kwf{pow8}(\var{ephemeral{\_}pkY}), \var{ephemeral{\_}skB}))\ \kw{in}$\\
+\>$\quad \kw{let}\ \var{key2B}: \kwt{G} = \kwf{G8{\_}to{\_}G}(\kwf{exp{\_}div8}(\kwf{pow8}(\var{ephemeral{\_}pkY}), \var{initskB}))\ \kw{in}$\\
+\>$\quad \kw{let}\ \var{secret1B}: \kwt{sym{\_}key} = \kwf{hash2key}(\kwf{hkey}, \kwf{}(\var{initN}, \var{key1B}, \var{key2B}))\ \kw{in}$\\
+\>$\quad \kw{let}\ \kwf{injbot}(\var{tuple}: \kwt{bitstring}) = \kwf{secret{\_}box{\_}open}(\var{m4}, \kwf{empty{\_}addata}, \var{secret1B}, \kwf{nonce0})\ \kw{in}$\\
+\>$\quad \kw{let}\ \kwf{}(\var{sign{\_}Y}: \kwt{bitstring}, \var{pkY}: \kwt{G}, \var{signYpk}: \kwt{pkey}) = \var{tuple}\ \kw{in}$\\
+\>$\quad \kw{if}\ (\var{signYpk}  =  \kwf{pkgen}(\var{initsignA}))\ \kw{then}$\\
+\>$\quad \kw{let}\ \var{pkB}: \kwt{G} = \kwf{G8{\_}to{\_}G}(\kwf{exp{\_}div8}(\kwf{g8}, \var{initskB}))\ \kw{in}$\\
+\>$\quad \kw{let}\ \var{m}: \kwt{bitstring} = \kwf{}(\var{initN}, \var{pkB}, \kwf{hash}(\kwf{hkey}, \kwf{G2bit}(\var{key1B})))\ \kw{in}$\\
+\>$\quad \kw{let}\ \var{y}: \kwt{pkey} = \var{signYpk}\ \kw{in}$\\
+\>$\quad \kw{let}\ \var{si}: \kwt{bitstring} = \var{sign{\_}Y}\ \kw{in}$\\
+\>$\quad \kw{if}\ \kwf{check}(\var{m}, \var{y}, \var{si})\ \kw{then}$\\
+\>$\quad \kw{let}\ \var{key3B}: \kwt{G} = \kwf{G8{\_}to{\_}G}(\kwf{exp{\_}div8}(\kwf{pow8}(\var{pkY}), \var{ephemeral{\_}skB}))\ \kw{in}$\\
+\>$\quad \kw{let}\ \var{secret2B}: \kwt{sym{\_}key} = \kwf{hash2key}(\kwf{hkey}, \kwf{}(\var{initN}, \var{key1B}, \var{key2B}, \var{key3B}))\ \kw{in}$\\
+\>$\quad \kw{let}\ \var{m}_{4}: \kwt{bitstring} = \kwf{}(\var{initN}, \var{sign{\_}Y}, \var{pkY}, \kwf{hash}(\kwf{hkey}, \kwf{G2bit}(\var{key1B})))\ \kw{in}$\\
+\>$\quad \kw{new}\ \var{r}_{3}: \kwt{sign{\_}seed};$\\
+\>$\quad \kw{let}\ \var{x}: \kwt{bitstring} = \var{m}_{4}\ \kw{in}$\\
+\>$\quad \kw{let}\ \var{m6}: \kwt{bitstring} = \kwf{secret{\_}box}(\kwf{sign{\_}r2}(\var{x}, \kwf{skgen2}(\var{initsignB}), \var{r}_{3}), \kwf{empty{\_}addata}, \var{secret2B}, \kwf{nonce0})\ \kw{in}$\\
+\>$\quad \kw{event}\ \kwf{ServerAccept}(\var{pkY});$\\
+\>$\quad \coutput{\kwc{c8}[\var{i}_{1}]}{\var{m6}};$\\
+\>$\quad \cinput{\kwc{c11}[\var{i}_{1}]}{\var{m8}: \kwt{sym{\_}key}};$\\
+\>$\quad \kw{if}\ (\var{m8}  =  \var{secret2B})\ \kw{then}$\\
+\>$\quad \kw{event}\ \kwf{ServerEndSession}(\var{pkB}, \var{initN})$\\
+\>$)$\\
+\\
+\\
+Applying remove assignments of findcond\\
+\quad -- Remove assignments on $\var{y}$ (definition removed, all usages removed)\\
+\quad -- Remove assignments on $\var{si}$ (definition removed, all usages removed)\\
+\quad -- Remove assignments on $\var{x}$ (definition removed, all usages removed)\\
+\quad -- Remove assignments on $\var{si1}$ (definition removed, all usages removed)\\
+yields\\
+\\
+Game -1 is\\
+\>$\cinput{\kwc{start}}{};$\\
+\>$\kw{new}\ \var{initN}: \kwt{hmac{\_}key};$\\
+\>$\kw{new}\ \var{initsignA}: \kwt{seed};$\\
+\>$\kw{new}\ \var{initsignB}: \kwt{seed};$\\
+\>$\kw{new}\ \var{initskA}: \kwt{Z};$\\
+\>$\kw{new}\ \var{initskB}: \kwt{Z};$\\
+\>$\coutput{\kwc{begin}}{\kwf{nonce0}};$\\
+\>$($\\
+\>$\quad !^{\var{i} \leq \kwp{N1}}$\\
+\>$\quad \cinput{\kwc{c9}[\var{i}]}{};$\\
+\>$\quad \kw{new}\ \var{ephemeral{\_}skA}: \kwt{Z};$\\
+\>$\quad \kw{let}\ \var{ephemeral{\_}pkA}: \kwt{G} = \kwf{G8{\_}to{\_}G}(\kwf{exp{\_}div8}(\kwf{g8}, \var{ephemeral{\_}skA}))\ \kw{in}$\\
+\>$\quad \kw{let}\ \var{m1}: \kwt{bitstring} = \kwf{}(\var{ephemeral{\_}pkA}, \kwf{hmac}(\var{initN}, \kwf{G2bit}(\var{ephemeral{\_}pkA})))\ \kw{in}$\\
+\>$\quad \coutput{\kwc{c1}[\var{i}]}{\var{m1}};$\\
+\>$\quad \cinput{\kwc{c2}[\var{i}]}{\var{ephemeral{\_}pkX}: \kwt{G}, \var{hmacX}: \kwt{hmac{\_}key}};$\\
+\>$\quad \kw{if}\ (\var{hmacX}  =  \kwf{hmac}(\var{initN}, \kwf{G2bit}(\var{ephemeral{\_}pkX})))\ \kw{then}$\\
+\>$\quad \kw{event}\ \kwf{ClientConfirmNetwork}(\var{initN});$\\
+\>$\quad \kw{let}\ \var{key1A}: \kwt{G} = \kwf{G8{\_}to{\_}G}(\kwf{exp{\_}div8}(\kwf{pow8}(\var{ephemeral{\_}pkX}), \var{ephemeral{\_}skA}))\ \kw{in}$\\
+\>$\quad \kw{let}\ \var{key2A}: \kwt{G} = \kwf{G8{\_}to{\_}G}(\kwf{exp{\_}div8}(\kwf{g8}, \kwf{mult}(\var{initskB}, \var{ephemeral{\_}skA})))\ \kw{in}$\\
+\>$\quad \kw{let}\ \var{secret1A}: \kwt{sym{\_}key} = \kwf{hash2key}(\kwf{hkey}, \kwf{}(\var{initN}, \var{key1A}, \var{key2A}))\ \kw{in}$\\
+\>$\quad \kw{let}\ \var{m}_{3}: \kwt{bitstring} = \kwf{}(\var{initN}, \kwf{G8{\_}to{\_}G}(\kwf{exp{\_}div8}(\kwf{g8}, \var{initskB})), \kwf{hash}(\kwf{hkey}, \kwf{G2bit}(\var{key1A})))\ \kw{in}$\\
+\>$\quad \kw{new}\ \var{r}_{2}: \kwt{sign{\_}seed};$\\
+\>$\quad \kw{let}\ \var{signAsk}: \kwt{skey} = \kwf{skgen}(\var{initsignA})\ \kw{in}$\\
+\>$\quad \kw{let}\ \var{sign{\_}A}: \kwt{bitstring} = \kwf{sign{\_}r}(\var{m}_{3}, \var{signAsk}, \var{r}_{2})\ \kw{in}$\\
+\>$\quad \kw{let}\ \var{signApk}: \kwt{pkey} = \kwf{pkgen}(\var{initsignA})\ \kw{in}$\\
+\>$\quad \kw{let}\ \var{pkA}: \kwt{G} = \kwf{G8{\_}to{\_}G}(\kwf{exp{\_}div8}(\kwf{g8}, \var{initskA}))\ \kw{in}$\\
+\>$\quad \kw{let}\ \var{m3}: \kwt{bitstring} = \kwf{secret{\_}box}(\kwf{}(\var{sign{\_}A}, \var{pkA}, \var{signApk}), \kwf{empty{\_}addata}, \var{secret1A}, \kwf{nonce0})\ \kw{in}$\\
+\>$\quad \coutput{\kwc{c3}[\var{i}]}{\var{m3}};$\\
+\>$\quad \cinput{\kwc{c4}[\var{i}]}{\var{m5}: \kwt{bitstring}};$\\
+\>$\quad \kw{let}\ \var{key3A}: \kwt{G} = \kwf{G8{\_}to{\_}G}(\kwf{exp{\_}div8}(\kwf{pow8}(\var{ephemeral{\_}pkX}), \var{initskA}))\ \kw{in}$\\
+\>$\quad \kw{let}\ \var{secret2A}: \kwt{sym{\_}key} = \kwf{bit2symkey}(\kwf{}(\var{initN}, \var{key1A}, \var{key2A}, \var{key3A}))\ \kw{in}$\\
+\>$\quad \kw{let}\ \kwf{injbot}(\var{sign{\_}B}: \kwt{bitstring}) = \kwf{secret{\_}box{\_}open}(\var{m5}, \kwf{empty{\_}addata}, \var{secret2A}, \kwf{nonce0})\ \kw{in}$\\
+\>$\quad \kw{let}\ \var{m1}_{4}: \kwt{bitstring} = \kwf{}(\var{initN}, \var{sign{\_}A}, \var{pkA}, \kwf{hash}(\kwf{hkey}, \kwf{G2bit}(\var{key1A})))\ \kw{in}$\\
+\>\{162\}\'$\quad \kw{find}\ \var{u}_{1} = \var{ri}_{1} \leq \kwp{N1}\ \kw{suchthat}\ \kw{defined}(\var{m}_{4}[\var{ri}_{1}], \var{r}_{3}[\var{ri}_{1}])\wedge (\var{m1}_{4}  =  \var{m}_{4}[\var{ri}_{1}]) \wedge  \kwf{check2}(\var{m1}_{4}, \kwf{pkgen2}(\var{initsignB}), \var{sign{\_}B})\ \kw{then}$\\
+\>$\quad \coutput{\kwc{c10}[\var{i}]}{\var{secret2A}};$\\
+\>$\quad \cinput{\kwc{finish}[\var{i}]}{};$\\
+\>$\quad \kw{event}\ \kwf{ClientEndSession}(\var{pkA}, \var{initN})$\\
+\>$) \mid ($\\
+\>$\quad !^{\var{i}_{1} \leq \kwp{N1}}$\\
+\>$\quad \cinput{\kwc{c5}[\var{i}_{1}]}{\var{ephemeral{\_}pkY}: \kwt{G}, \var{hmacY}: \kwt{hmac{\_}key}};$\\
+\>$\quad \kw{if}\ (\var{hmacY}  =  \kwf{hmac}(\var{initN}, \kwf{G2bit}(\var{ephemeral{\_}pkY})))\ \kw{then}$\\
+\>$\quad \kw{event}\ \kwf{ServerConfirmNetwork}(\var{initN});$\\
+\>$\quad \kw{new}\ \var{ephemeral{\_}skB}: \kwt{Z};$\\
+\>$\quad \kw{let}\ \var{ephemeral{\_}pkB}: \kwt{G} = \kwf{G8{\_}to{\_}G}(\kwf{exp{\_}div8}(\kwf{g8}, \var{ephemeral{\_}skB}))\ \kw{in}$\\
+\>$\quad \kw{let}\ \var{m2}: \kwt{bitstring} = \kwf{}(\var{ephemeral{\_}pkB}, \kwf{hmac}(\var{initN}, \kwf{G2bit}(\var{ephemeral{\_}pkB})))\ \kw{in}$\\
+\>$\quad \coutput{\kwc{c6}[\var{i}_{1}]}{\var{m2}};$\\
+\>$\quad \cinput{\kwc{c7}[\var{i}_{1}]}{\var{m4}: \kwt{bitstring}};$\\
+\>$\quad \kw{let}\ \var{key1B}: \kwt{G} = \kwf{G8{\_}to{\_}G}(\kwf{exp{\_}div8}(\kwf{pow8}(\var{ephemeral{\_}pkY}), \var{ephemeral{\_}skB}))\ \kw{in}$\\
+\>$\quad \kw{let}\ \var{key2B}: \kwt{G} = \kwf{G8{\_}to{\_}G}(\kwf{exp{\_}div8}(\kwf{pow8}(\var{ephemeral{\_}pkY}), \var{initskB}))\ \kw{in}$\\
+\>$\quad \kw{let}\ \var{secret1B}: \kwt{sym{\_}key} = \kwf{hash2key}(\kwf{hkey}, \kwf{}(\var{initN}, \var{key1B}, \var{key2B}))\ \kw{in}$\\
+\>$\quad \kw{let}\ \kwf{injbot}(\var{tuple}: \kwt{bitstring}) = \kwf{secret{\_}box{\_}open}(\var{m4}, \kwf{empty{\_}addata}, \var{secret1B}, \kwf{nonce0})\ \kw{in}$\\
+\>$\quad \kw{let}\ \kwf{}(\var{sign{\_}Y}: \kwt{bitstring}, \var{pkY}: \kwt{G}, \var{signYpk}: \kwt{pkey}) = \var{tuple}\ \kw{in}$\\
+\>$\quad \kw{if}\ (\var{signYpk}  =  \kwf{pkgen}(\var{initsignA}))\ \kw{then}$\\
+\>$\quad \kw{let}\ \var{pkB}: \kwt{G} = \kwf{G8{\_}to{\_}G}(\kwf{exp{\_}div8}(\kwf{g8}, \var{initskB}))\ \kw{in}$\\
+\>$\quad \kw{let}\ \var{m}: \kwt{bitstring} = \kwf{}(\var{initN}, \var{pkB}, \kwf{hash}(\kwf{hkey}, \kwf{G2bit}(\var{key1B})))\ \kw{in}$\\
+\>$\quad \kw{if}\ \kwf{check}(\var{m}, \var{signYpk}, \var{sign{\_}Y})\ \kw{then}$\\
+\>$\quad \kw{let}\ \var{key3B}: \kwt{G} = \kwf{G8{\_}to{\_}G}(\kwf{exp{\_}div8}(\kwf{pow8}(\var{pkY}), \var{ephemeral{\_}skB}))\ \kw{in}$\\
+\>$\quad \kw{let}\ \var{secret2B}: \kwt{sym{\_}key} = \kwf{hash2key}(\kwf{hkey}, \kwf{}(\var{initN}, \var{key1B}, \var{key2B}, \var{key3B}))\ \kw{in}$\\
+\>$\quad \kw{let}\ \var{m}_{4}: \kwt{bitstring} = \kwf{}(\var{initN}, \var{sign{\_}Y}, \var{pkY}, \kwf{hash}(\kwf{hkey}, \kwf{G2bit}(\var{key1B})))\ \kw{in}$\\
+\>$\quad \kw{new}\ \var{r}_{3}: \kwt{sign{\_}seed};$\\
+\>$\quad \kw{let}\ \var{m6}: \kwt{bitstring} = \kwf{secret{\_}box}(\kwf{sign{\_}r2}(\var{m}_{4}, \kwf{skgen2}(\var{initsignB}), \var{r}_{3}), \kwf{empty{\_}addata}, \var{secret2B}, \kwf{nonce0})\ \kw{in}$\\
+\>$\quad \kw{event}\ \kwf{ServerAccept}(\var{pkY});$\\
+\>$\quad \coutput{\kwc{c8}[\var{i}_{1}]}{\var{m6}};$\\
+\>$\quad \cinput{\kwc{c11}[\var{i}_{1}]}{\var{m8}: \kwt{sym{\_}key}};$\\
+\>$\quad \kw{if}\ (\var{m8}  =  \var{secret2B})\ \kw{then}$\\
+\>$\quad \kw{event}\ \kwf{ServerEndSession}(\var{pkB}, \var{initN})$\\
+\>$)$\\
+\\
+\\
+Applying simplify {}[probability $0.5 / |\kwt{hmac{\_}key}|${}]{}\\
+\quad -- Simplification pass\\
+\qquad -- Replaced $((\var{m1}_{4}  =  \var{m}_{4}[\var{ri}_{1}]) \wedge  \kwf{check2}(\var{m1}_{4}, \kwf{pkgen2}(\var{initsignB}), \var{sign{\_}B}))$ with $((\kwf{hash}(\kwf{hkey}, \kwf{G2bit}(\var{key1A}))  =  \kwf{hash}(\kwf{hkey}, \kwf{G2bit}(\var{key1B}[\var{ri}_{1}]))) \wedge  (\var{pkA}  =  \var{pkY}[\var{ri}_{1}]) \wedge  (\var{sign{\_}A}  =  \var{sign{\_}Y}[\var{ri}_{1}]) \wedge  \kwf{check2}(\var{m1}_{4}, \kwf{pkgen2}(\var{initsignB}), \var{sign{\_}B}))$ at 1365\\
+\qquad -- Replaced defined condition $\var{m}_{4}[\var{ri}_{1}], \var{r}_{3}[\var{ri}_{1}]$ with $\var{r}_{3}[\var{ri}_{1}], \var{sign{\_}Y}[\var{ri}_{1}], \var{pkY}[\var{ri}_{1}], \var{key1B}[\var{ri}_{1}]$ in find at 162\\
+yields\\
+\\
+Game -1 is\\
+\>$\cinput{\kwc{start}}{};$\\
+\>$\kw{new}\ \var{initN}: \kwt{hmac{\_}key};$\\
+\>$\kw{new}\ \var{initsignA}: \kwt{seed};$\\
+\>$\kw{new}\ \var{initsignB}: \kwt{seed};$\\
+\>$\kw{new}\ \var{initskA}: \kwt{Z};$\\
+\>$\kw{new}\ \var{initskB}: \kwt{Z};$\\
+\>$\coutput{\kwc{begin}}{\kwf{nonce0}};$\\
+\>$($\\
+\>$\quad !^{\var{i} \leq \kwp{N1}}$\\
+\>$\quad \cinput{\kwc{c9}[\var{i}]}{};$\\
+\>$\quad \kw{new}\ \var{ephemeral{\_}skA}: \kwt{Z};$\\
+\>$\quad \kw{let}\ \var{ephemeral{\_}pkA}: \kwt{G} = \kwf{G8{\_}to{\_}G}(\kwf{exp{\_}div8}(\kwf{g8}, \var{ephemeral{\_}skA}))\ \kw{in}$\\
+\>$\quad \kw{let}\ \var{m1}: \kwt{bitstring} = \kwf{}(\var{ephemeral{\_}pkA}, \kwf{hmac}(\var{initN}, \kwf{G2bit}(\var{ephemeral{\_}pkA})))\ \kw{in}$\\
+\>$\quad \coutput{\kwc{c1}[\var{i}]}{\var{m1}};$\\
+\>$\quad \cinput{\kwc{c2}[\var{i}]}{\var{ephemeral{\_}pkX}: \kwt{G}, \var{hmacX}: \kwt{hmac{\_}key}};$\\
+\>$\quad \kw{if}\ (\var{hmacX}  =  \kwf{hmac}(\var{initN}, \kwf{G2bit}(\var{ephemeral{\_}pkX})))\ \kw{then}$\\
+\>$\quad \kw{event}\ \kwf{ClientConfirmNetwork}(\var{initN});$\\
+\>$\quad \kw{let}\ \var{key1A}: \kwt{G} = \kwf{G8{\_}to{\_}G}(\kwf{exp{\_}div8}(\kwf{pow8}(\var{ephemeral{\_}pkX}), \var{ephemeral{\_}skA}))\ \kw{in}$\\
+\>$\quad \kw{let}\ \var{key2A}: \kwt{G} = \kwf{G8{\_}to{\_}G}(\kwf{exp{\_}div8}(\kwf{g8}, \kwf{mult}(\var{initskB}, \var{ephemeral{\_}skA})))\ \kw{in}$\\
+\>$\quad \kw{let}\ \var{secret1A}: \kwt{sym{\_}key} = \kwf{hash2key}(\kwf{hkey}, \kwf{}(\var{initN}, \var{key1A}, \var{key2A}))\ \kw{in}$\\
+\>$\quad \kw{let}\ \var{m}_{3}: \kwt{bitstring} = \kwf{}(\var{initN}, \kwf{G8{\_}to{\_}G}(\kwf{exp{\_}div8}(\kwf{g8}, \var{initskB})), \kwf{hash}(\kwf{hkey}, \kwf{G2bit}(\var{key1A})))\ \kw{in}$\\
+\>$\quad \kw{new}\ \var{r}_{2}: \kwt{sign{\_}seed};$\\
+\>$\quad \kw{let}\ \var{signAsk}: \kwt{skey} = \kwf{skgen}(\var{initsignA})\ \kw{in}$\\
+\>$\quad \kw{let}\ \var{sign{\_}A}: \kwt{bitstring} = \kwf{sign{\_}r}(\var{m}_{3}, \var{signAsk}, \var{r}_{2})\ \kw{in}$\\
+\>$\quad \kw{let}\ \var{signApk}: \kwt{pkey} = \kwf{pkgen}(\var{initsignA})\ \kw{in}$\\
+\>$\quad \kw{let}\ \var{pkA}: \kwt{G} = \kwf{G8{\_}to{\_}G}(\kwf{exp{\_}div8}(\kwf{g8}, \var{initskA}))\ \kw{in}$\\
+\>$\quad \kw{let}\ \var{m3}: \kwt{bitstring} = \kwf{secret{\_}box}(\kwf{}(\var{sign{\_}A}, \var{pkA}, \var{signApk}), \kwf{empty{\_}addata}, \var{secret1A}, \kwf{nonce0})\ \kw{in}$\\
+\>$\quad \coutput{\kwc{c3}[\var{i}]}{\var{m3}};$\\
+\>$\quad \cinput{\kwc{c4}[\var{i}]}{\var{m5}: \kwt{bitstring}};$\\
+\>$\quad \kw{let}\ \var{key3A}: \kwt{G} = \kwf{G8{\_}to{\_}G}(\kwf{exp{\_}div8}(\kwf{pow8}(\var{ephemeral{\_}pkX}), \var{initskA}))\ \kw{in}$\\
+\>$\quad \kw{let}\ \var{secret2A}: \kwt{sym{\_}key} = \kwf{bit2symkey}(\kwf{}(\var{initN}, \var{key1A}, \var{key2A}, \var{key3A}))\ \kw{in}$\\
+\>$\quad \kw{let}\ \kwf{injbot}(\var{sign{\_}B}: \kwt{bitstring}) = \kwf{secret{\_}box{\_}open}(\var{m5}, \kwf{empty{\_}addata}, \var{secret2A}, \kwf{nonce0})\ \kw{in}$\\
+\>$\quad \kw{let}\ \var{m1}_{4}: \kwt{bitstring} = \kwf{}(\var{initN}, \var{sign{\_}A}, \var{pkA}, \kwf{hash}(\kwf{hkey}, \kwf{G2bit}(\var{key1A})))\ \kw{in}$\\
+\>$\quad \kw{find}\ \var{u}_{1} = \var{ri}_{1} \leq \kwp{N1}\ \kw{suchthat}\ \kw{defined}(\var{r}_{3}[\var{ri}_{1}], \var{sign{\_}Y}[\var{ri}_{1}], \var{pkY}[\var{ri}_{1}], \var{key1B}[\var{ri}_{1}])\wedge (\kwf{hash}(\kwf{hkey}, \kwf{G2bit}(\var{key1A}))  =  \kwf{hash}(\kwf{hkey}, \kwf{G2bit}(\var{key1B}[\var{ri}_{1}]))) \wedge  (\var{pkA}  =  \var{pkY}[\var{ri}_{1}]) \wedge  (\var{sign{\_}A}  =  \var{sign{\_}Y}[\var{ri}_{1}]) \wedge  \kwf{check2}(\var{m1}_{4}, \kwf{pkgen2}(\var{initsignB}), \var{sign{\_}B})\ \kw{then}$\\
+\>$\quad \coutput{\kwc{c10}[\var{i}]}{\var{secret2A}};$\\
+\>$\quad \cinput{\kwc{finish}[\var{i}]}{};$\\
+\>$\quad \kw{event}\ \kwf{ClientEndSession}(\var{pkA}, \var{initN})$\\
+\>$) \mid ($\\
+\>$\quad !^{\var{i}_{1} \leq \kwp{N1}}$\\
+\>$\quad \cinput{\kwc{c5}[\var{i}_{1}]}{\var{ephemeral{\_}pkY}: \kwt{G}, \var{hmacY}: \kwt{hmac{\_}key}};$\\
+\>$\quad \kw{if}\ (\var{hmacY}  =  \kwf{hmac}(\var{initN}, \kwf{G2bit}(\var{ephemeral{\_}pkY})))\ \kw{then}$\\
+\>$\quad \kw{event}\ \kwf{ServerConfirmNetwork}(\var{initN});$\\
+\>$\quad \kw{new}\ \var{ephemeral{\_}skB}: \kwt{Z};$\\
+\>$\quad \kw{let}\ \var{ephemeral{\_}pkB}: \kwt{G} = \kwf{G8{\_}to{\_}G}(\kwf{exp{\_}div8}(\kwf{g8}, \var{ephemeral{\_}skB}))\ \kw{in}$\\
+\>$\quad \kw{let}\ \var{m2}: \kwt{bitstring} = \kwf{}(\var{ephemeral{\_}pkB}, \kwf{hmac}(\var{initN}, \kwf{G2bit}(\var{ephemeral{\_}pkB})))\ \kw{in}$\\
+\>$\quad \coutput{\kwc{c6}[\var{i}_{1}]}{\var{m2}};$\\
+\>$\quad \cinput{\kwc{c7}[\var{i}_{1}]}{\var{m4}: \kwt{bitstring}};$\\
+\>$\quad \kw{let}\ \var{key1B}: \kwt{G} = \kwf{G8{\_}to{\_}G}(\kwf{exp{\_}div8}(\kwf{pow8}(\var{ephemeral{\_}pkY}), \var{ephemeral{\_}skB}))\ \kw{in}$\\
+\>$\quad \kw{let}\ \var{key2B}: \kwt{G} = \kwf{G8{\_}to{\_}G}(\kwf{exp{\_}div8}(\kwf{pow8}(\var{ephemeral{\_}pkY}), \var{initskB}))\ \kw{in}$\\
+\>$\quad \kw{let}\ \var{secret1B}: \kwt{sym{\_}key} = \kwf{hash2key}(\kwf{hkey}, \kwf{}(\var{initN}, \var{key1B}, \var{key2B}))\ \kw{in}$\\
+\>$\quad \kw{let}\ \kwf{injbot}(\var{tuple}: \kwt{bitstring}) = \kwf{secret{\_}box{\_}open}(\var{m4}, \kwf{empty{\_}addata}, \var{secret1B}, \kwf{nonce0})\ \kw{in}$\\
+\>$\quad \kw{let}\ \kwf{}(\var{sign{\_}Y}: \kwt{bitstring}, \var{pkY}: \kwt{G}, \var{signYpk}: \kwt{pkey}) = \var{tuple}\ \kw{in}$\\
+\>$\quad \kw{if}\ (\var{signYpk}  =  \kwf{pkgen}(\var{initsignA}))\ \kw{then}$\\
+\>$\quad \kw{let}\ \var{pkB}: \kwt{G} = \kwf{G8{\_}to{\_}G}(\kwf{exp{\_}div8}(\kwf{g8}, \var{initskB}))\ \kw{in}$\\
+\>$\quad \kw{let}\ \var{m}: \kwt{bitstring} = \kwf{}(\var{initN}, \var{pkB}, \kwf{hash}(\kwf{hkey}, \kwf{G2bit}(\var{key1B})))\ \kw{in}$\\
+\>$\quad \kw{if}\ \kwf{check}(\var{m}, \var{signYpk}, \var{sign{\_}Y})\ \kw{then}$\\
+\>$\quad \kw{let}\ \var{key3B}: \kwt{G} = \kwf{G8{\_}to{\_}G}(\kwf{exp{\_}div8}(\kwf{pow8}(\var{pkY}), \var{ephemeral{\_}skB}))\ \kw{in}$\\
+\>$\quad \kw{let}\ \var{secret2B}: \kwt{sym{\_}key} = \kwf{hash2key}(\kwf{hkey}, \kwf{}(\var{initN}, \var{key1B}, \var{key2B}, \var{key3B}))\ \kw{in}$\\
+\>$\quad \kw{let}\ \var{m}_{4}: \kwt{bitstring} = \kwf{}(\var{initN}, \var{sign{\_}Y}, \var{pkY}, \kwf{hash}(\kwf{hkey}, \kwf{G2bit}(\var{key1B})))\ \kw{in}$\\
+\>$\quad \kw{new}\ \var{r}_{3}: \kwt{sign{\_}seed};$\\
+\>$\quad \kw{let}\ \var{m6}: \kwt{bitstring} = \kwf{secret{\_}box}(\kwf{sign{\_}r2}(\var{m}_{4}, \kwf{skgen2}(\var{initsignB}), \var{r}_{3}), \kwf{empty{\_}addata}, \var{secret2B}, \kwf{nonce0})\ \kw{in}$\\
+\>$\quad \kw{event}\ \kwf{ServerAccept}(\var{pkY});$\\
+\>$\quad \coutput{\kwc{c8}[\var{i}_{1}]}{\var{m6}};$\\
+\>$\quad \cinput{\kwc{c11}[\var{i}_{1}]}{\var{m8}: \kwt{sym{\_}key}};$\\
+\>$\quad \kw{if}\ (\var{m8}  =  \var{secret2B})\ \kw{then}$\\
+\>$\quad \kw{event}\ \kwf{ServerEndSession}(\var{pkB}, \var{initN})$\\
+\>$)$\\
+\\
+\\
+Proved $\kw{event}(\kwf{ClientEndSession}(\var{x}, \var{y})) \Longrightarrow (\kw{event}(\kwf{ServerAccept}(\var{x})) \wedge \kw{event}(\kwf{ServerConfirmNetwork}(\var{y})))$ in game -1\\
+\\
+Applying remove assignments of binder $\var{signApk}$\\
+\quad -- Remove assignments on $\var{signApk}$ (definition removed, all usages removed)\\
+yields\\
+\\
+Game -1 is\\
+\>$\cinput{\kwc{start}}{};$\\
+\>$\kw{new}\ \var{initN}: \kwt{hmac{\_}key};$\\
+\>$\kw{new}\ \var{initsignA}: \kwt{seed};$\\
+\>$\kw{new}\ \var{initsignB}: \kwt{seed};$\\
+\>$\kw{new}\ \var{initskA}: \kwt{Z};$\\
+\>$\kw{new}\ \var{initskB}: \kwt{Z};$\\
+\>$\coutput{\kwc{begin}}{\kwf{nonce0}};$\\
+\>$($\\
+\>$\quad !^{\var{i} \leq \kwp{N1}}$\\
+\>$\quad \cinput{\kwc{c9}[\var{i}]}{};$\\
+\>$\quad \kw{new}\ \var{ephemeral{\_}skA}: \kwt{Z};$\\
+\>$\quad \kw{let}\ \var{ephemeral{\_}pkA}: \kwt{G} = \kwf{G8{\_}to{\_}G}(\kwf{exp{\_}div8}(\kwf{g8}, \var{ephemeral{\_}skA}))\ \kw{in}$\\
+\>$\quad \kw{let}\ \var{m1}: \kwt{bitstring} = \kwf{}(\var{ephemeral{\_}pkA}, \kwf{hmac}(\var{initN}, \kwf{G2bit}(\var{ephemeral{\_}pkA})))\ \kw{in}$\\
+\>$\quad \coutput{\kwc{c1}[\var{i}]}{\var{m1}};$\\
+\>$\quad \cinput{\kwc{c2}[\var{i}]}{\var{ephemeral{\_}pkX}: \kwt{G}, \var{hmacX}: \kwt{hmac{\_}key}};$\\
+\>$\quad \kw{if}\ (\var{hmacX}  =  \kwf{hmac}(\var{initN}, \kwf{G2bit}(\var{ephemeral{\_}pkX})))\ \kw{then}$\\
+\>$\quad \kw{event}\ \kwf{ClientConfirmNetwork}(\var{initN});$\\
+\>$\quad \kw{let}\ \var{key1A}: \kwt{G} = \kwf{G8{\_}to{\_}G}(\kwf{exp{\_}div8}(\kwf{pow8}(\var{ephemeral{\_}pkX}), \var{ephemeral{\_}skA}))\ \kw{in}$\\
+\>$\quad \kw{let}\ \var{key2A}: \kwt{G} = \kwf{G8{\_}to{\_}G}(\kwf{exp{\_}div8}(\kwf{g8}, \kwf{mult}(\var{initskB}, \var{ephemeral{\_}skA})))\ \kw{in}$\\
+\>$\quad \kw{let}\ \var{secret1A}: \kwt{sym{\_}key} = \kwf{hash2key}(\kwf{hkey}, \kwf{}(\var{initN}, \var{key1A}, \var{key2A}))\ \kw{in}$\\
+\>$\quad \kw{let}\ \var{m}_{3}: \kwt{bitstring} = \kwf{}(\var{initN}, \kwf{G8{\_}to{\_}G}(\kwf{exp{\_}div8}(\kwf{g8}, \var{initskB})), \kwf{hash}(\kwf{hkey}, \kwf{G2bit}(\var{key1A})))\ \kw{in}$\\
+\>$\quad \kw{new}\ \var{r}_{2}: \kwt{sign{\_}seed};$\\
+\>$\quad \kw{let}\ \var{signAsk}: \kwt{skey} = \kwf{skgen}(\var{initsignA})\ \kw{in}$\\
+\>$\quad \kw{let}\ \var{sign{\_}A}: \kwt{bitstring} = \kwf{sign{\_}r}(\var{m}_{3}, \var{signAsk}, \var{r}_{2})\ \kw{in}$\\
+\>$\quad \kw{let}\ \var{pkA}: \kwt{G} = \kwf{G8{\_}to{\_}G}(\kwf{exp{\_}div8}(\kwf{g8}, \var{initskA}))\ \kw{in}$\\
+\>$\quad \kw{let}\ \var{m3}: \kwt{bitstring} = \kwf{secret{\_}box}(\kwf{}(\var{sign{\_}A}, \var{pkA}, \kwf{pkgen}(\var{initsignA})), \kwf{empty{\_}addata}, \var{secret1A}, \kwf{nonce0})\ \kw{in}$\\
+\>$\quad \coutput{\kwc{c3}[\var{i}]}{\var{m3}};$\\
+\>$\quad \cinput{\kwc{c4}[\var{i}]}{\var{m5}: \kwt{bitstring}};$\\
+\>$\quad \kw{let}\ \var{key3A}: \kwt{G} = \kwf{G8{\_}to{\_}G}(\kwf{exp{\_}div8}(\kwf{pow8}(\var{ephemeral{\_}pkX}), \var{initskA}))\ \kw{in}$\\
+\>$\quad \kw{let}\ \var{secret2A}: \kwt{sym{\_}key} = \kwf{bit2symkey}(\kwf{}(\var{initN}, \var{key1A}, \var{key2A}, \var{key3A}))\ \kw{in}$\\
+\>$\quad \kw{let}\ \kwf{injbot}(\var{sign{\_}B}: \kwt{bitstring}) = \kwf{secret{\_}box{\_}open}(\var{m5}, \kwf{empty{\_}addata}, \var{secret2A}, \kwf{nonce0})\ \kw{in}$\\
+\>$\quad \kw{let}\ \var{m1}_{4}: \kwt{bitstring} = \kwf{}(\var{initN}, \var{sign{\_}A}, \var{pkA}, \kwf{hash}(\kwf{hkey}, \kwf{G2bit}(\var{key1A})))\ \kw{in}$\\
+\>$\quad \kw{find}\ \var{u}_{1} = \var{ri}_{1} \leq \kwp{N1}\ \kw{suchthat}\ \kw{defined}(\var{r}_{3}[\var{ri}_{1}], \var{sign{\_}Y}[\var{ri}_{1}], \var{pkY}[\var{ri}_{1}], \var{key1B}[\var{ri}_{1}])\wedge (\kwf{hash}(\kwf{hkey}, \kwf{G2bit}(\var{key1A}))  =  \kwf{hash}(\kwf{hkey}, \kwf{G2bit}(\var{key1B}[\var{ri}_{1}]))) \wedge  (\var{pkA}  =  \var{pkY}[\var{ri}_{1}]) \wedge  (\var{sign{\_}A}  =  \var{sign{\_}Y}[\var{ri}_{1}]) \wedge  \kwf{check2}(\var{m1}_{4}, \kwf{pkgen2}(\var{initsignB}), \var{sign{\_}B})\ \kw{then}$\\
+\>$\quad \coutput{\kwc{c10}[\var{i}]}{\var{secret2A}};$\\
+\>$\quad \cinput{\kwc{finish}[\var{i}]}{};$\\
+\>$\quad \kw{event}\ \kwf{ClientEndSession}(\var{pkA}, \var{initN})$\\
+\>$) \mid ($\\
+\>$\quad !^{\var{i}_{1} \leq \kwp{N1}}$\\
+\>$\quad \cinput{\kwc{c5}[\var{i}_{1}]}{\var{ephemeral{\_}pkY}: \kwt{G}, \var{hmacY}: \kwt{hmac{\_}key}};$\\
+\>$\quad \kw{if}\ (\var{hmacY}  =  \kwf{hmac}(\var{initN}, \kwf{G2bit}(\var{ephemeral{\_}pkY})))\ \kw{then}$\\
+\>$\quad \kw{event}\ \kwf{ServerConfirmNetwork}(\var{initN});$\\
+\>$\quad \kw{new}\ \var{ephemeral{\_}skB}: \kwt{Z};$\\
+\>$\quad \kw{let}\ \var{ephemeral{\_}pkB}: \kwt{G} = \kwf{G8{\_}to{\_}G}(\kwf{exp{\_}div8}(\kwf{g8}, \var{ephemeral{\_}skB}))\ \kw{in}$\\
+\>$\quad \kw{let}\ \var{m2}: \kwt{bitstring} = \kwf{}(\var{ephemeral{\_}pkB}, \kwf{hmac}(\var{initN}, \kwf{G2bit}(\var{ephemeral{\_}pkB})))\ \kw{in}$\\
+\>$\quad \coutput{\kwc{c6}[\var{i}_{1}]}{\var{m2}};$\\
+\>$\quad \cinput{\kwc{c7}[\var{i}_{1}]}{\var{m4}: \kwt{bitstring}};$\\
+\>$\quad \kw{let}\ \var{key1B}: \kwt{G} = \kwf{G8{\_}to{\_}G}(\kwf{exp{\_}div8}(\kwf{pow8}(\var{ephemeral{\_}pkY}), \var{ephemeral{\_}skB}))\ \kw{in}$\\
+\>$\quad \kw{let}\ \var{key2B}: \kwt{G} = \kwf{G8{\_}to{\_}G}(\kwf{exp{\_}div8}(\kwf{pow8}(\var{ephemeral{\_}pkY}), \var{initskB}))\ \kw{in}$\\
+\>$\quad \kw{let}\ \var{secret1B}: \kwt{sym{\_}key} = \kwf{hash2key}(\kwf{hkey}, \kwf{}(\var{initN}, \var{key1B}, \var{key2B}))\ \kw{in}$\\
+\>$\quad \kw{let}\ \kwf{injbot}(\var{tuple}: \kwt{bitstring}) = \kwf{secret{\_}box{\_}open}(\var{m4}, \kwf{empty{\_}addata}, \var{secret1B}, \kwf{nonce0})\ \kw{in}$\\
+\>$\quad \kw{let}\ \kwf{}(\var{sign{\_}Y}: \kwt{bitstring}, \var{pkY}: \kwt{G}, \var{signYpk}: \kwt{pkey}) = \var{tuple}\ \kw{in}$\\
+\>$\quad \kw{if}\ (\var{signYpk}  =  \kwf{pkgen}(\var{initsignA}))\ \kw{then}$\\
+\>$\quad \kw{let}\ \var{pkB}: \kwt{G} = \kwf{G8{\_}to{\_}G}(\kwf{exp{\_}div8}(\kwf{g8}, \var{initskB}))\ \kw{in}$\\
+\>$\quad \kw{let}\ \var{m}: \kwt{bitstring} = \kwf{}(\var{initN}, \var{pkB}, \kwf{hash}(\kwf{hkey}, \kwf{G2bit}(\var{key1B})))\ \kw{in}$\\
+\>$\quad \kw{if}\ \kwf{check}(\var{m}, \var{signYpk}, \var{sign{\_}Y})\ \kw{then}$\\
+\>$\quad \kw{let}\ \var{key3B}: \kwt{G} = \kwf{G8{\_}to{\_}G}(\kwf{exp{\_}div8}(\kwf{pow8}(\var{pkY}), \var{ephemeral{\_}skB}))\ \kw{in}$\\
+\>$\quad \kw{let}\ \var{secret2B}: \kwt{sym{\_}key} = \kwf{hash2key}(\kwf{hkey}, \kwf{}(\var{initN}, \var{key1B}, \var{key2B}, \var{key3B}))\ \kw{in}$\\
+\>$\quad \kw{let}\ \var{m}_{4}: \kwt{bitstring} = \kwf{}(\var{initN}, \var{sign{\_}Y}, \var{pkY}, \kwf{hash}(\kwf{hkey}, \kwf{G2bit}(\var{key1B})))\ \kw{in}$\\
+\>$\quad \kw{new}\ \var{r}_{3}: \kwt{sign{\_}seed};$\\
+\>$\quad \kw{let}\ \var{m6}: \kwt{bitstring} = \kwf{secret{\_}box}(\kwf{sign{\_}r2}(\var{m}_{4}, \kwf{skgen2}(\var{initsignB}), \var{r}_{3}), \kwf{empty{\_}addata}, \var{secret2B}, \kwf{nonce0})\ \kw{in}$\\
+\>$\quad \kw{event}\ \kwf{ServerAccept}(\var{pkY});$\\
+\>$\quad \coutput{\kwc{c8}[\var{i}_{1}]}{\var{m6}};$\\
+\>$\quad \cinput{\kwc{c11}[\var{i}_{1}]}{\var{m8}: \kwt{sym{\_}key}};$\\
+\>$\quad \kw{if}\ (\var{m8}  =  \var{secret2B})\ \kw{then}$\\
+\>$\quad \kw{event}\ \kwf{ServerEndSession}(\var{pkB}, \var{initN})$\\
+\>$)$\\
+\\
+\\
+Applying remove assignments of binder $\var{signAsk}$\\
+\quad -- Remove assignments on $\var{signAsk}$ (definition removed, all usages removed)\\
+yields\\
+\\
+Game -1 is\\
+\>$\cinput{\kwc{start}}{};$\\
+\>$\kw{new}\ \var{initN}: \kwt{hmac{\_}key};$\\
+\>$\kw{new}\ \var{initsignA}: \kwt{seed};$\\
+\>$\kw{new}\ \var{initsignB}: \kwt{seed};$\\
+\>$\kw{new}\ \var{initskA}: \kwt{Z};$\\
+\>$\kw{new}\ \var{initskB}: \kwt{Z};$\\
+\>$\coutput{\kwc{begin}}{\kwf{nonce0}};$\\
+\>$($\\
+\>$\quad !^{\var{i} \leq \kwp{N1}}$\\
+\>$\quad \cinput{\kwc{c9}[\var{i}]}{};$\\
+\>$\quad \kw{new}\ \var{ephemeral{\_}skA}: \kwt{Z};$\\
+\>$\quad \kw{let}\ \var{ephemeral{\_}pkA}: \kwt{G} = \kwf{G8{\_}to{\_}G}(\kwf{exp{\_}div8}(\kwf{g8}, \var{ephemeral{\_}skA}))\ \kw{in}$\\
+\>$\quad \kw{let}\ \var{m1}: \kwt{bitstring} = \kwf{}(\var{ephemeral{\_}pkA}, \kwf{hmac}(\var{initN}, \kwf{G2bit}(\var{ephemeral{\_}pkA})))\ \kw{in}$\\
+\>$\quad \coutput{\kwc{c1}[\var{i}]}{\var{m1}};$\\
+\>$\quad \cinput{\kwc{c2}[\var{i}]}{\var{ephemeral{\_}pkX}: \kwt{G}, \var{hmacX}: \kwt{hmac{\_}key}};$\\
+\>$\quad \kw{if}\ (\var{hmacX}  =  \kwf{hmac}(\var{initN}, \kwf{G2bit}(\var{ephemeral{\_}pkX})))\ \kw{then}$\\
+\>$\quad \kw{event}\ \kwf{ClientConfirmNetwork}(\var{initN});$\\
+\>$\quad \kw{let}\ \var{key1A}: \kwt{G} = \kwf{G8{\_}to{\_}G}(\kwf{exp{\_}div8}(\kwf{pow8}(\var{ephemeral{\_}pkX}), \var{ephemeral{\_}skA}))\ \kw{in}$\\
+\>$\quad \kw{let}\ \var{key2A}: \kwt{G} = \kwf{G8{\_}to{\_}G}(\kwf{exp{\_}div8}(\kwf{g8}, \kwf{mult}(\var{initskB}, \var{ephemeral{\_}skA})))\ \kw{in}$\\
+\>$\quad \kw{let}\ \var{secret1A}: \kwt{sym{\_}key} = \kwf{hash2key}(\kwf{hkey}, \kwf{}(\var{initN}, \var{key1A}, \var{key2A}))\ \kw{in}$\\
+\>$\quad \kw{let}\ \var{m}_{3}: \kwt{bitstring} = \kwf{}(\var{initN}, \kwf{G8{\_}to{\_}G}(\kwf{exp{\_}div8}(\kwf{g8}, \var{initskB})), \kwf{hash}(\kwf{hkey}, \kwf{G2bit}(\var{key1A})))\ \kw{in}$\\
+\>$\quad \kw{new}\ \var{r}_{2}: \kwt{sign{\_}seed};$\\
+\>$\quad \kw{let}\ \var{sign{\_}A}: \kwt{bitstring} = \kwf{sign{\_}r}(\var{m}_{3}, \kwf{skgen}(\var{initsignA}), \var{r}_{2})\ \kw{in}$\\
+\>$\quad \kw{let}\ \var{pkA}: \kwt{G} = \kwf{G8{\_}to{\_}G}(\kwf{exp{\_}div8}(\kwf{g8}, \var{initskA}))\ \kw{in}$\\
+\>$\quad \kw{let}\ \var{m3}: \kwt{bitstring} = \kwf{secret{\_}box}(\kwf{}(\var{sign{\_}A}, \var{pkA}, \kwf{pkgen}(\var{initsignA})), \kwf{empty{\_}addata}, \var{secret1A}, \kwf{nonce0})\ \kw{in}$\\
+\>$\quad \coutput{\kwc{c3}[\var{i}]}{\var{m3}};$\\
+\>$\quad \cinput{\kwc{c4}[\var{i}]}{\var{m5}: \kwt{bitstring}};$\\
+\>$\quad \kw{let}\ \var{key3A}: \kwt{G} = \kwf{G8{\_}to{\_}G}(\kwf{exp{\_}div8}(\kwf{pow8}(\var{ephemeral{\_}pkX}), \var{initskA}))\ \kw{in}$\\
+\>$\quad \kw{let}\ \var{secret2A}: \kwt{sym{\_}key} = \kwf{bit2symkey}(\kwf{}(\var{initN}, \var{key1A}, \var{key2A}, \var{key3A}))\ \kw{in}$\\
+\>$\quad \kw{let}\ \kwf{injbot}(\var{sign{\_}B}: \kwt{bitstring}) = \kwf{secret{\_}box{\_}open}(\var{m5}, \kwf{empty{\_}addata}, \var{secret2A}, \kwf{nonce0})\ \kw{in}$\\
+\>$\quad \kw{let}\ \var{m1}_{4}: \kwt{bitstring} = \kwf{}(\var{initN}, \var{sign{\_}A}, \var{pkA}, \kwf{hash}(\kwf{hkey}, \kwf{G2bit}(\var{key1A})))\ \kw{in}$\\
+\>$\quad \kw{find}\ \var{u}_{1} = \var{ri}_{1} \leq \kwp{N1}\ \kw{suchthat}\ \kw{defined}(\var{r}_{3}[\var{ri}_{1}], \var{sign{\_}Y}[\var{ri}_{1}], \var{pkY}[\var{ri}_{1}], \var{key1B}[\var{ri}_{1}])\wedge (\kwf{hash}(\kwf{hkey}, \kwf{G2bit}(\var{key1A}))  =  \kwf{hash}(\kwf{hkey}, \kwf{G2bit}(\var{key1B}[\var{ri}_{1}]))) \wedge  (\var{pkA}  =  \var{pkY}[\var{ri}_{1}]) \wedge  (\var{sign{\_}A}  =  \var{sign{\_}Y}[\var{ri}_{1}]) \wedge  \kwf{check2}(\var{m1}_{4}, \kwf{pkgen2}(\var{initsignB}), \var{sign{\_}B})\ \kw{then}$\\
+\>$\quad \coutput{\kwc{c10}[\var{i}]}{\var{secret2A}};$\\
+\>$\quad \cinput{\kwc{finish}[\var{i}]}{};$\\
+\>$\quad \kw{event}\ \kwf{ClientEndSession}(\var{pkA}, \var{initN})$\\
+\>$) \mid ($\\
+\>$\quad !^{\var{i}_{1} \leq \kwp{N1}}$\\
+\>$\quad \cinput{\kwc{c5}[\var{i}_{1}]}{\var{ephemeral{\_}pkY}: \kwt{G}, \var{hmacY}: \kwt{hmac{\_}key}};$\\
+\>$\quad \kw{if}\ (\var{hmacY}  =  \kwf{hmac}(\var{initN}, \kwf{G2bit}(\var{ephemeral{\_}pkY})))\ \kw{then}$\\
+\>$\quad \kw{event}\ \kwf{ServerConfirmNetwork}(\var{initN});$\\
+\>$\quad \kw{new}\ \var{ephemeral{\_}skB}: \kwt{Z};$\\
+\>$\quad \kw{let}\ \var{ephemeral{\_}pkB}: \kwt{G} = \kwf{G8{\_}to{\_}G}(\kwf{exp{\_}div8}(\kwf{g8}, \var{ephemeral{\_}skB}))\ \kw{in}$\\
+\>$\quad \kw{let}\ \var{m2}: \kwt{bitstring} = \kwf{}(\var{ephemeral{\_}pkB}, \kwf{hmac}(\var{initN}, \kwf{G2bit}(\var{ephemeral{\_}pkB})))\ \kw{in}$\\
+\>$\quad \coutput{\kwc{c6}[\var{i}_{1}]}{\var{m2}};$\\
+\>$\quad \cinput{\kwc{c7}[\var{i}_{1}]}{\var{m4}: \kwt{bitstring}};$\\
+\>$\quad \kw{let}\ \var{key1B}: \kwt{G} = \kwf{G8{\_}to{\_}G}(\kwf{exp{\_}div8}(\kwf{pow8}(\var{ephemeral{\_}pkY}), \var{ephemeral{\_}skB}))\ \kw{in}$\\
+\>$\quad \kw{let}\ \var{key2B}: \kwt{G} = \kwf{G8{\_}to{\_}G}(\kwf{exp{\_}div8}(\kwf{pow8}(\var{ephemeral{\_}pkY}), \var{initskB}))\ \kw{in}$\\
+\>$\quad \kw{let}\ \var{secret1B}: \kwt{sym{\_}key} = \kwf{hash2key}(\kwf{hkey}, \kwf{}(\var{initN}, \var{key1B}, \var{key2B}))\ \kw{in}$\\
+\>$\quad \kw{let}\ \kwf{injbot}(\var{tuple}: \kwt{bitstring}) = \kwf{secret{\_}box{\_}open}(\var{m4}, \kwf{empty{\_}addata}, \var{secret1B}, \kwf{nonce0})\ \kw{in}$\\
+\>$\quad \kw{let}\ \kwf{}(\var{sign{\_}Y}: \kwt{bitstring}, \var{pkY}: \kwt{G}, \var{signYpk}: \kwt{pkey}) = \var{tuple}\ \kw{in}$\\
+\>$\quad \kw{if}\ (\var{signYpk}  =  \kwf{pkgen}(\var{initsignA}))\ \kw{then}$\\
+\>$\quad \kw{let}\ \var{pkB}: \kwt{G} = \kwf{G8{\_}to{\_}G}(\kwf{exp{\_}div8}(\kwf{g8}, \var{initskB}))\ \kw{in}$\\
+\>$\quad \kw{let}\ \var{m}: \kwt{bitstring} = \kwf{}(\var{initN}, \var{pkB}, \kwf{hash}(\kwf{hkey}, \kwf{G2bit}(\var{key1B})))\ \kw{in}$\\
+\>$\quad \kw{if}\ \kwf{check}(\var{m}, \var{signYpk}, \var{sign{\_}Y})\ \kw{then}$\\
+\>$\quad \kw{let}\ \var{key3B}: \kwt{G} = \kwf{G8{\_}to{\_}G}(\kwf{exp{\_}div8}(\kwf{pow8}(\var{pkY}), \var{ephemeral{\_}skB}))\ \kw{in}$\\
+\>$\quad \kw{let}\ \var{secret2B}: \kwt{sym{\_}key} = \kwf{hash2key}(\kwf{hkey}, \kwf{}(\var{initN}, \var{key1B}, \var{key2B}, \var{key3B}))\ \kw{in}$\\
+\>$\quad \kw{let}\ \var{m}_{4}: \kwt{bitstring} = \kwf{}(\var{initN}, \var{sign{\_}Y}, \var{pkY}, \kwf{hash}(\kwf{hkey}, \kwf{G2bit}(\var{key1B})))\ \kw{in}$\\
+\>$\quad \kw{new}\ \var{r}_{3}: \kwt{sign{\_}seed};$\\
+\>$\quad \kw{let}\ \var{m6}: \kwt{bitstring} = \kwf{secret{\_}box}(\kwf{sign{\_}r2}(\var{m}_{4}, \kwf{skgen2}(\var{initsignB}), \var{r}_{3}), \kwf{empty{\_}addata}, \var{secret2B}, \kwf{nonce0})\ \kw{in}$\\
+\>$\quad \kw{event}\ \kwf{ServerAccept}(\var{pkY});$\\
+\>$\quad \coutput{\kwc{c8}[\var{i}_{1}]}{\var{m6}};$\\
+\>$\quad \cinput{\kwc{c11}[\var{i}_{1}]}{\var{m8}: \kwt{sym{\_}key}};$\\
+\>$\quad \kw{if}\ (\var{m8}  =  \var{secret2B})\ \kw{then}$\\
+\>$\quad \kw{event}\ \kwf{ServerEndSession}(\var{pkB}, \var{initN})$\\
+\>$)$\\
+\\
+\\
+Applying equivalence $\kwc{uf{\_}cma}(\kwf{sign})$ with $\var{r}_{2}, \var{initsignA}$ {}[probability $0.5 / |\kwt{hmac{\_}key}| + \var{Psign}(\kw{time}(\mathit{context\ for\ game}\ -1) + \kw{time} + (-1. + \kwp{N1}) \times \kw{time}(\kwf{check}, \kw{maxlength}(\var{m}), \allowbreak \kw{maxlength}(\var{sign{\_}Y})), \allowbreak \kwp{N1}, \allowbreak \kw{maxlength}(\var{m}_{3}))${}]{}\\
+\quad -- Equivalence $\kwc{uf{\_}cma}(\kwf{sign})$ with $\textrm{variables: }\var{initsignA} \rightarrow \var{r}, \var{r}_{2} \rightarrow \var{r2}$\\
+\quad -- Simplification pass\\
+\qquad -- Test at 319 always false\\
+\qquad -- Test at 319 always true\\
+\quad -- Expand if/find/let\\
+yields\\
+\\
+Game -1 is\\
+\>$\cinput{\kwc{start}}{};$\\
+\>$\kw{new}\ \var{initN}: \kwt{hmac{\_}key};$\\
+\>$\kw{new}\ \var{initsignA}: \kwt{seed};$\\
+\>$\kw{new}\ \var{initsignB}: \kwt{seed};$\\
+\>$\kw{new}\ \var{initskA}: \kwt{Z};$\\
+\>$\kw{new}\ \var{initskB}: \kwt{Z};$\\
+\>$\coutput{\kwc{begin}}{\kwf{nonce0}};$\\
+\>$($\\
+\>$\quad !^{\var{i} \leq \kwp{N1}}$\\
+\>$\quad \cinput{\kwc{c9}[\var{i}]}{};$\\
+\>$\quad \kw{new}\ \var{ephemeral{\_}skA}: \kwt{Z};$\\
+\>$\quad \kw{let}\ \var{ephemeral{\_}pkA}: \kwt{G} = \kwf{G8{\_}to{\_}G}(\kwf{exp{\_}div8}(\kwf{g8}, \var{ephemeral{\_}skA}))\ \kw{in}$\\
+\>$\quad \kw{let}\ \var{m1}: \kwt{bitstring} = \kwf{}(\var{ephemeral{\_}pkA}, \kwf{hmac}(\var{initN}, \kwf{G2bit}(\var{ephemeral{\_}pkA})))\ \kw{in}$\\
+\>$\quad \coutput{\kwc{c1}[\var{i}]}{\var{m1}};$\\
+\>$\quad \cinput{\kwc{c2}[\var{i}]}{\var{ephemeral{\_}pkX}: \kwt{G}, \var{hmacX}: \kwt{hmac{\_}key}};$\\
+\>$\quad \kw{if}\ (\var{hmacX}  =  \kwf{hmac}(\var{initN}, \kwf{G2bit}(\var{ephemeral{\_}pkX})))\ \kw{then}$\\
+\>$\quad \kw{event}\ \kwf{ClientConfirmNetwork}(\var{initN});$\\
+\>$\quad \kw{let}\ \var{key1A}: \kwt{G} = \kwf{G8{\_}to{\_}G}(\kwf{exp{\_}div8}(\kwf{pow8}(\var{ephemeral{\_}pkX}), \var{ephemeral{\_}skA}))\ \kw{in}$\\
+\>$\quad \kw{let}\ \var{key2A}: \kwt{G} = \kwf{G8{\_}to{\_}G}(\kwf{exp{\_}div8}(\kwf{g8}, \kwf{mult}(\var{initskB}, \var{ephemeral{\_}skA})))\ \kw{in}$\\
+\>$\quad \kw{let}\ \var{secret1A}: \kwt{sym{\_}key} = \kwf{hash2key}(\kwf{hkey}, \kwf{}(\var{initN}, \var{key1A}, \var{key2A}))\ \kw{in}$\\
+\>$\quad \kw{let}\ \var{m}_{3}: \kwt{bitstring} = \kwf{}(\var{initN}, \kwf{G8{\_}to{\_}G}(\kwf{exp{\_}div8}(\kwf{g8}, \var{initskB})), \kwf{hash}(\kwf{hkey}, \kwf{G2bit}(\var{key1A})))\ \kw{in}$\\
+\>$\quad \kw{new}\ \var{r}_{2}: \kwt{sign{\_}seed};$\\
+\>$\quad \kw{let}\ \var{x}_{9}: \kwt{bitstring} = \var{m}_{3}\ \kw{in}$\\
+\>$\quad \kw{let}\ \var{sign{\_}A}: \kwt{bitstring} = \kwf{sign{\_}r2}(\var{x}_{9}, \kwf{skgen2}(\var{initsignA}), \var{r}_{2})\ \kw{in}$\\
+\>$\quad \kw{let}\ \var{pkA}: \kwt{G} = \kwf{G8{\_}to{\_}G}(\kwf{exp{\_}div8}(\kwf{g8}, \var{initskA}))\ \kw{in}$\\
+\>$\quad \kw{let}\ \var{m3}: \kwt{bitstring} = \kwf{secret{\_}box}(\kwf{}(\var{sign{\_}A}, \var{pkA}, \kwf{pkgen2}(\var{initsignA})), \kwf{empty{\_}addata}, \var{secret1A}, \kwf{nonce0})\ \kw{in}$\\
+\>$\quad \coutput{\kwc{c3}[\var{i}]}{\var{m3}};$\\
+\>$\quad \cinput{\kwc{c4}[\var{i}]}{\var{m5}: \kwt{bitstring}};$\\
+\>$\quad \kw{let}\ \var{key3A}: \kwt{G} = \kwf{G8{\_}to{\_}G}(\kwf{exp{\_}div8}(\kwf{pow8}(\var{ephemeral{\_}pkX}), \var{initskA}))\ \kw{in}$\\
+\>$\quad \kw{let}\ \var{secret2A}: \kwt{sym{\_}key} = \kwf{bit2symkey}(\kwf{}(\var{initN}, \var{key1A}, \var{key2A}, \var{key3A}))\ \kw{in}$\\
+\>$\quad \kw{let}\ \kwf{injbot}(\var{sign{\_}B}: \kwt{bitstring}) = \kwf{secret{\_}box{\_}open}(\var{m5}, \kwf{empty{\_}addata}, \var{secret2A}, \kwf{nonce0})\ \kw{in}$\\
+\>$\quad \kw{let}\ \var{m1}_{4}: \kwt{bitstring} = \kwf{}(\var{initN}, \var{sign{\_}A}, \var{pkA}, \kwf{hash}(\kwf{hkey}, \kwf{G2bit}(\var{key1A})))\ \kw{in}$\\
+\>$\quad \kw{find}\ \var{u}_{1} = \var{ri}_{1} \leq \kwp{N1}\ \kw{suchthat}\ \kw{defined}(\var{r}_{3}[\var{ri}_{1}], \var{sign{\_}Y}[\var{ri}_{1}], \var{pkY}[\var{ri}_{1}], \var{key1B}[\var{ri}_{1}])\wedge (\kwf{hash}(\kwf{hkey}, \kwf{G2bit}(\var{key1A}))  =  \kwf{hash}(\kwf{hkey}, \kwf{G2bit}(\var{key1B}[\var{ri}_{1}]))) \wedge  (\var{pkA}  =  \var{pkY}[\var{ri}_{1}]) \wedge  (\var{sign{\_}A}  =  \var{sign{\_}Y}[\var{ri}_{1}]) \wedge  \kwf{check2}(\var{m1}_{4}, \kwf{pkgen2}(\var{initsignB}), \var{sign{\_}B})\ \kw{then}$\\
+\>$\quad \coutput{\kwc{c10}[\var{i}]}{\var{secret2A}};$\\
+\>$\quad \cinput{\kwc{finish}[\var{i}]}{}$\\
+\>$) \mid ($\\
+\>$\quad !^{\var{i}_{1} \leq \kwp{N1}}$\\
+\>$\quad \cinput{\kwc{c5}[\var{i}_{1}]}{\var{ephemeral{\_}pkY}: \kwt{G}, \var{hmacY}: \kwt{hmac{\_}key}};$\\
+\>$\quad \kw{if}\ (\var{hmacY}  =  \kwf{hmac}(\var{initN}, \kwf{G2bit}(\var{ephemeral{\_}pkY})))\ \kw{then}$\\
+\>$\quad \kw{new}\ \var{ephemeral{\_}skB}: \kwt{Z};$\\
+\>$\quad \kw{let}\ \var{ephemeral{\_}pkB}: \kwt{G} = \kwf{G8{\_}to{\_}G}(\kwf{exp{\_}div8}(\kwf{g8}, \var{ephemeral{\_}skB}))\ \kw{in}$\\
+\>$\quad \kw{let}\ \var{m2}: \kwt{bitstring} = \kwf{}(\var{ephemeral{\_}pkB}, \kwf{hmac}(\var{initN}, \kwf{G2bit}(\var{ephemeral{\_}pkB})))\ \kw{in}$\\
+\>$\quad \coutput{\kwc{c6}[\var{i}_{1}]}{\var{m2}};$\\
+\>$\quad \cinput{\kwc{c7}[\var{i}_{1}]}{\var{m4}: \kwt{bitstring}};$\\
+\>$\quad \kw{let}\ \var{key1B}: \kwt{G} = \kwf{G8{\_}to{\_}G}(\kwf{exp{\_}div8}(\kwf{pow8}(\var{ephemeral{\_}pkY}), \var{ephemeral{\_}skB}))\ \kw{in}$\\
+\>$\quad \kw{let}\ \var{key2B}: \kwt{G} = \kwf{G8{\_}to{\_}G}(\kwf{exp{\_}div8}(\kwf{pow8}(\var{ephemeral{\_}pkY}), \var{initskB}))\ \kw{in}$\\
+\>$\quad \kw{let}\ \var{secret1B}: \kwt{sym{\_}key} = \kwf{hash2key}(\kwf{hkey}, \kwf{}(\var{initN}, \var{key1B}, \var{key2B}))\ \kw{in}$\\
+\>$\quad \kw{let}\ \kwf{injbot}(\var{tuple}: \kwt{bitstring}) = \kwf{secret{\_}box{\_}open}(\var{m4}, \kwf{empty{\_}addata}, \var{secret1B}, \kwf{nonce0})\ \kw{in}$\\
+\>$\quad \kw{let}\ \kwf{}(\var{sign{\_}Y}: \kwt{bitstring}, \var{pkY}: \kwt{G}, \var{signYpk}: \kwt{pkey}) = \var{tuple}\ \kw{in}$\\
+\>$\quad \kw{if}\ (\var{signYpk}  =  \kwf{pkgen2}(\var{initsignA}))\ \kw{then}$\\
+\>$\quad \kw{let}\ \var{pkB}: \kwt{G} = \kwf{G8{\_}to{\_}G}(\kwf{exp{\_}div8}(\kwf{g8}, \var{initskB}))\ \kw{in}$\\
+\>$\quad \kw{let}\ \var{m}: \kwt{bitstring} = \kwf{}(\var{initN}, \var{pkB}, \kwf{hash}(\kwf{hkey}, \kwf{G2bit}(\var{key1B})))\ \kw{in}$\\
+\>$\quad \kw{let}\ \var{m1}_{5}: \kwt{bitstring} = \var{m}\ \kw{in}$\\
+\>$\quad \kw{let}\ \var{si1}_{4}: \kwt{bitstring} = \var{sign{\_}Y}\ \kw{in}$\\
+\>$\quad \kw{find}\ \var{u}_{2} = \var{ri}_{2} \leq \kwp{N1}\ \kw{suchthat}\ \kw{defined}(\var{x}_{9}[\var{ri}_{2}])\wedge (\var{m1}_{5}  =  \var{x}_{9}[\var{ri}_{2}]) \wedge  \kwf{check2}(\var{m1}_{5}, \kwf{pkgen2}(\var{initsignA}), \var{si1}_{4})\ \kw{then}$\\
+\>$\quad \kw{let}\ \var{key3B}: \kwt{G} = \kwf{G8{\_}to{\_}G}(\kwf{exp{\_}div8}(\kwf{pow8}(\var{pkY}), \var{ephemeral{\_}skB}))\ \kw{in}$\\
+\>$\quad \kw{let}\ \var{secret2B}: \kwt{sym{\_}key} = \kwf{hash2key}(\kwf{hkey}, \kwf{}(\var{initN}, \var{key1B}, \var{key2B}, \var{key3B}))\ \kw{in}$\\
+\>$\quad \kw{let}\ \var{m}_{4}: \kwt{bitstring} = \kwf{}(\var{initN}, \var{sign{\_}Y}, \var{pkY}, \kwf{hash}(\kwf{hkey}, \kwf{G2bit}(\var{key1B})))\ \kw{in}$\\
+\>$\quad \kw{new}\ \var{r}_{3}: \kwt{sign{\_}seed};$\\
+\>$\quad \kw{let}\ \var{m6}: \kwt{bitstring} = \kwf{secret{\_}box}(\kwf{sign{\_}r2}(\var{m}_{4}, \kwf{skgen2}(\var{initsignB}), \var{r}_{3}), \kwf{empty{\_}addata}, \var{secret2B}, \kwf{nonce0})\ \kw{in}$\\
+\>$\quad \coutput{\kwc{c8}[\var{i}_{1}]}{\var{m6}};$\\
+\>$\quad \cinput{\kwc{c11}[\var{i}_{1}]}{\var{m8}: \kwt{sym{\_}key}};$\\
+\>$\quad \kw{if}\ (\var{m8}  =  \var{secret2B})\ \kw{then}$\\
+\>$\quad \kw{event}\ \kwf{ServerEndSession}(\var{pkB}, \var{initN})$\\
+\>$)$\\
+\\
+\\
+Applying remove assignments of findcond\\
+\quad -- Remove assignments on $\var{m1}_{5}$ (definition removed, all usages removed)\\
+\quad -- Remove assignments on $\var{si1}_{4}$ (definition removed, all usages removed)\\
+\quad -- Remove assignments on $\var{x}_{9}$ (definition removed, all usages removed)\\
+yields\\
+\\
+Game -1 is\\
+\>$\cinput{\kwc{start}}{};$\\
+\>$\kw{new}\ \var{initN}: \kwt{hmac{\_}key};$\\
+\>$\kw{new}\ \var{initsignA}: \kwt{seed};$\\
+\>$\kw{new}\ \var{initsignB}: \kwt{seed};$\\
+\>$\kw{new}\ \var{initskA}: \kwt{Z};$\\
+\>$\kw{new}\ \var{initskB}: \kwt{Z};$\\
+\>$\coutput{\kwc{begin}}{\kwf{nonce0}};$\\
+\>$($\\
+\>$\quad !^{\var{i} \leq \kwp{N1}}$\\
+\>$\quad \cinput{\kwc{c9}[\var{i}]}{};$\\
+\>$\quad \kw{new}\ \var{ephemeral{\_}skA}: \kwt{Z};$\\
+\>$\quad \kw{let}\ \var{ephemeral{\_}pkA}: \kwt{G} = \kwf{G8{\_}to{\_}G}(\kwf{exp{\_}div8}(\kwf{g8}, \var{ephemeral{\_}skA}))\ \kw{in}$\\
+\>$\quad \kw{let}\ \var{m1}: \kwt{bitstring} = \kwf{}(\var{ephemeral{\_}pkA}, \kwf{hmac}(\var{initN}, \kwf{G2bit}(\var{ephemeral{\_}pkA})))\ \kw{in}$\\
+\>$\quad \coutput{\kwc{c1}[\var{i}]}{\var{m1}};$\\
+\>$\quad \cinput{\kwc{c2}[\var{i}]}{\var{ephemeral{\_}pkX}: \kwt{G}, \var{hmacX}: \kwt{hmac{\_}key}};$\\
+\>$\quad \kw{if}\ (\var{hmacX}  =  \kwf{hmac}(\var{initN}, \kwf{G2bit}(\var{ephemeral{\_}pkX})))\ \kw{then}$\\
+\>$\quad \kw{event}\ \kwf{ClientConfirmNetwork}(\var{initN});$\\
+\>$\quad \kw{let}\ \var{key1A}: \kwt{G} = \kwf{G8{\_}to{\_}G}(\kwf{exp{\_}div8}(\kwf{pow8}(\var{ephemeral{\_}pkX}), \var{ephemeral{\_}skA}))\ \kw{in}$\\
+\>$\quad \kw{let}\ \var{key2A}: \kwt{G} = \kwf{G8{\_}to{\_}G}(\kwf{exp{\_}div8}(\kwf{g8}, \kwf{mult}(\var{initskB}, \var{ephemeral{\_}skA})))\ \kw{in}$\\
+\>$\quad \kw{let}\ \var{secret1A}: \kwt{sym{\_}key} = \kwf{hash2key}(\kwf{hkey}, \kwf{}(\var{initN}, \var{key1A}, \var{key2A}))\ \kw{in}$\\
+\>$\quad \kw{let}\ \var{m}_{3}: \kwt{bitstring} = \kwf{}(\var{initN}, \kwf{G8{\_}to{\_}G}(\kwf{exp{\_}div8}(\kwf{g8}, \var{initskB})), \kwf{hash}(\kwf{hkey}, \kwf{G2bit}(\var{key1A})))\ \kw{in}$\\
+\>$\quad \kw{new}\ \var{r}_{2}: \kwt{sign{\_}seed};$\\
+\>$\quad \kw{let}\ \var{sign{\_}A}: \kwt{bitstring} = \kwf{sign{\_}r2}(\var{m}_{3}, \kwf{skgen2}(\var{initsignA}), \var{r}_{2})\ \kw{in}$\\
+\>$\quad \kw{let}\ \var{pkA}: \kwt{G} = \kwf{G8{\_}to{\_}G}(\kwf{exp{\_}div8}(\kwf{g8}, \var{initskA}))\ \kw{in}$\\
+\>$\quad \kw{let}\ \var{m3}: \kwt{bitstring} = \kwf{secret{\_}box}(\kwf{}(\var{sign{\_}A}, \var{pkA}, \kwf{pkgen2}(\var{initsignA})), \kwf{empty{\_}addata}, \var{secret1A}, \kwf{nonce0})\ \kw{in}$\\
+\>$\quad \coutput{\kwc{c3}[\var{i}]}{\var{m3}};$\\
+\>$\quad \cinput{\kwc{c4}[\var{i}]}{\var{m5}: \kwt{bitstring}};$\\
+\>$\quad \kw{let}\ \var{key3A}: \kwt{G} = \kwf{G8{\_}to{\_}G}(\kwf{exp{\_}div8}(\kwf{pow8}(\var{ephemeral{\_}pkX}), \var{initskA}))\ \kw{in}$\\
+\>$\quad \kw{let}\ \var{secret2A}: \kwt{sym{\_}key} = \kwf{bit2symkey}(\kwf{}(\var{initN}, \var{key1A}, \var{key2A}, \var{key3A}))\ \kw{in}$\\
+\>$\quad \kw{let}\ \kwf{injbot}(\var{sign{\_}B}: \kwt{bitstring}) = \kwf{secret{\_}box{\_}open}(\var{m5}, \kwf{empty{\_}addata}, \var{secret2A}, \kwf{nonce0})\ \kw{in}$\\
+\>$\quad \kw{let}\ \var{m1}_{4}: \kwt{bitstring} = \kwf{}(\var{initN}, \var{sign{\_}A}, \var{pkA}, \kwf{hash}(\kwf{hkey}, \kwf{G2bit}(\var{key1A})))\ \kw{in}$\\
+\>$\quad \kw{find}\ \var{u}_{1} = \var{ri}_{1} \leq \kwp{N1}\ \kw{suchthat}\ \kw{defined}(\var{r}_{3}[\var{ri}_{1}], \var{sign{\_}Y}[\var{ri}_{1}], \var{pkY}[\var{ri}_{1}], \var{key1B}[\var{ri}_{1}])\wedge (\kwf{hash}(\kwf{hkey}, \kwf{G2bit}(\var{key1A}))  =  \kwf{hash}(\kwf{hkey}, \kwf{G2bit}(\var{key1B}[\var{ri}_{1}]))) \wedge  (\var{pkA}  =  \var{pkY}[\var{ri}_{1}]) \wedge  (\var{sign{\_}A}  =  \var{sign{\_}Y}[\var{ri}_{1}]) \wedge  \kwf{check2}(\var{m1}_{4}, \kwf{pkgen2}(\var{initsignB}), \var{sign{\_}B})\ \kw{then}$\\
+\>$\quad \coutput{\kwc{c10}[\var{i}]}{\var{secret2A}};$\\
+\>$\quad \cinput{\kwc{finish}[\var{i}]}{}$\\
+\>$) \mid ($\\
+\>$\quad !^{\var{i}_{1} \leq \kwp{N1}}$\\
+\>$\quad \cinput{\kwc{c5}[\var{i}_{1}]}{\var{ephemeral{\_}pkY}: \kwt{G}, \var{hmacY}: \kwt{hmac{\_}key}};$\\
+\>$\quad \kw{if}\ (\var{hmacY}  =  \kwf{hmac}(\var{initN}, \kwf{G2bit}(\var{ephemeral{\_}pkY})))\ \kw{then}$\\
+\>$\quad \kw{new}\ \var{ephemeral{\_}skB}: \kwt{Z};$\\
+\>$\quad \kw{let}\ \var{ephemeral{\_}pkB}: \kwt{G} = \kwf{G8{\_}to{\_}G}(\kwf{exp{\_}div8}(\kwf{g8}, \var{ephemeral{\_}skB}))\ \kw{in}$\\
+\>$\quad \kw{let}\ \var{m2}: \kwt{bitstring} = \kwf{}(\var{ephemeral{\_}pkB}, \kwf{hmac}(\var{initN}, \kwf{G2bit}(\var{ephemeral{\_}pkB})))\ \kw{in}$\\
+\>$\quad \coutput{\kwc{c6}[\var{i}_{1}]}{\var{m2}};$\\
+\>$\quad \cinput{\kwc{c7}[\var{i}_{1}]}{\var{m4}: \kwt{bitstring}};$\\
+\>$\quad \kw{let}\ \var{key1B}: \kwt{G} = \kwf{G8{\_}to{\_}G}(\kwf{exp{\_}div8}(\kwf{pow8}(\var{ephemeral{\_}pkY}), \var{ephemeral{\_}skB}))\ \kw{in}$\\
+\>$\quad \kw{let}\ \var{key2B}: \kwt{G} = \kwf{G8{\_}to{\_}G}(\kwf{exp{\_}div8}(\kwf{pow8}(\var{ephemeral{\_}pkY}), \var{initskB}))\ \kw{in}$\\
+\>$\quad \kw{let}\ \var{secret1B}: \kwt{sym{\_}key} = \kwf{hash2key}(\kwf{hkey}, \kwf{}(\var{initN}, \var{key1B}, \var{key2B}))\ \kw{in}$\\
+\>$\quad \kw{let}\ \kwf{injbot}(\var{tuple}: \kwt{bitstring}) = \kwf{secret{\_}box{\_}open}(\var{m4}, \kwf{empty{\_}addata}, \var{secret1B}, \kwf{nonce0})\ \kw{in}$\\
+\>$\quad \kw{let}\ \kwf{}(\var{sign{\_}Y}: \kwt{bitstring}, \var{pkY}: \kwt{G}, \var{signYpk}: \kwt{pkey}) = \var{tuple}\ \kw{in}$\\
+\>$\quad \kw{if}\ (\var{signYpk}  =  \kwf{pkgen2}(\var{initsignA}))\ \kw{then}$\\
+\>$\quad \kw{let}\ \var{pkB}: \kwt{G} = \kwf{G8{\_}to{\_}G}(\kwf{exp{\_}div8}(\kwf{g8}, \var{initskB}))\ \kw{in}$\\
+\>$\quad \kw{let}\ \var{m}: \kwt{bitstring} = \kwf{}(\var{initN}, \var{pkB}, \kwf{hash}(\kwf{hkey}, \kwf{G2bit}(\var{key1B})))\ \kw{in}$\\
+\>\{304\}\'$\quad \kw{find}\ \var{u}_{2} = \var{ri}_{2} \leq \kwp{N1}\ \kw{suchthat}\ \kw{defined}(\var{m}_{3}[\var{ri}_{2}], \var{r}_{2}[\var{ri}_{2}])\wedge (\var{m}  =  \var{m}_{3}[\var{ri}_{2}]) \wedge  \kwf{check2}(\var{m}, \kwf{pkgen2}(\var{initsignA}), \var{sign{\_}Y})\ \kw{then}$\\
+\>$\quad \kw{let}\ \var{key3B}: \kwt{G} = \kwf{G8{\_}to{\_}G}(\kwf{exp{\_}div8}(\kwf{pow8}(\var{pkY}), \var{ephemeral{\_}skB}))\ \kw{in}$\\
+\>$\quad \kw{let}\ \var{secret2B}: \kwt{sym{\_}key} = \kwf{hash2key}(\kwf{hkey}, \kwf{}(\var{initN}, \var{key1B}, \var{key2B}, \var{key3B}))\ \kw{in}$\\
+\>$\quad \kw{let}\ \var{m}_{4}: \kwt{bitstring} = \kwf{}(\var{initN}, \var{sign{\_}Y}, \var{pkY}, \kwf{hash}(\kwf{hkey}, \kwf{G2bit}(\var{key1B})))\ \kw{in}$\\
+\>$\quad \kw{new}\ \var{r}_{3}: \kwt{sign{\_}seed};$\\
+\>$\quad \kw{let}\ \var{m6}: \kwt{bitstring} = \kwf{secret{\_}box}(\kwf{sign{\_}r2}(\var{m}_{4}, \kwf{skgen2}(\var{initsignB}), \var{r}_{3}), \kwf{empty{\_}addata}, \var{secret2B}, \kwf{nonce0})\ \kw{in}$\\
+\>$\quad \coutput{\kwc{c8}[\var{i}_{1}]}{\var{m6}};$\\
+\>$\quad \cinput{\kwc{c11}[\var{i}_{1}]}{\var{m8}: \kwt{sym{\_}key}};$\\
+\>$\quad \kw{if}\ (\var{m8}  =  \var{secret2B})\ \kw{then}$\\
+\>$\quad \kw{event}\ \kwf{ServerEndSession}(\var{pkB}, \var{initN})$\\
+\>$)$\\
+\\
+\\
+Applying simplify {}[probability $0.5 / |\kwt{hmac{\_}key}|${}]{}\\
+\quad -- Simplification pass\\
+\qquad -- Replaced $((\var{m}  =  \var{m}_{3}[\var{ri}_{2}]) \wedge  \kwf{check2}(\var{m}, \kwf{pkgen2}(\var{initsignA}), \var{sign{\_}Y}))$ with $((\kwf{hash}(\kwf{hkey}, \kwf{G2bit}(\var{key1B}))  =  \kwf{hash}(\kwf{hkey}, \kwf{G2bit}(\var{key1A}[\var{ri}_{2}]))) \wedge  \kwf{check2}(\var{m}, \kwf{pkgen2}(\var{initsignA}), \var{sign{\_}Y}))$ at 984\\
+\qquad -- Replaced defined condition $\var{m}_{3}[\var{ri}_{2}], \var{r}_{2}[\var{ri}_{2}]$ with $\var{r}_{2}[\var{ri}_{2}], \var{key1A}[\var{ri}_{2}]$ in find at 304\\
+yields\\
+\\
+Game -1 is\\
+\>$\cinput{\kwc{start}}{};$\\
+\>$\kw{new}\ \var{initN}: \kwt{hmac{\_}key};$\\
+\>$\kw{new}\ \var{initsignA}: \kwt{seed};$\\
+\>$\kw{new}\ \var{initsignB}: \kwt{seed};$\\
+\>$\kw{new}\ \var{initskA}: \kwt{Z};$\\
+\>$\kw{new}\ \var{initskB}: \kwt{Z};$\\
+\>$\coutput{\kwc{begin}}{\kwf{nonce0}};$\\
+\>$($\\
+\>$\quad !^{\var{i} \leq \kwp{N1}}$\\
+\>$\quad \cinput{\kwc{c9}[\var{i}]}{};$\\
+\>$\quad \kw{new}\ \var{ephemeral{\_}skA}: \kwt{Z};$\\
+\>$\quad \kw{let}\ \var{ephemeral{\_}pkA}: \kwt{G} = \kwf{G8{\_}to{\_}G}(\kwf{exp{\_}div8}(\kwf{g8}, \var{ephemeral{\_}skA}))\ \kw{in}$\\
+\>$\quad \kw{let}\ \var{m1}: \kwt{bitstring} = \kwf{}(\var{ephemeral{\_}pkA}, \kwf{hmac}(\var{initN}, \kwf{G2bit}(\var{ephemeral{\_}pkA})))\ \kw{in}$\\
+\>$\quad \coutput{\kwc{c1}[\var{i}]}{\var{m1}};$\\
+\>$\quad \cinput{\kwc{c2}[\var{i}]}{\var{ephemeral{\_}pkX}: \kwt{G}, \var{hmacX}: \kwt{hmac{\_}key}};$\\
+\>$\quad \kw{if}\ (\var{hmacX}  =  \kwf{hmac}(\var{initN}, \kwf{G2bit}(\var{ephemeral{\_}pkX})))\ \kw{then}$\\
+\>$\quad \kw{event}\ \kwf{ClientConfirmNetwork}(\var{initN});$\\
+\>$\quad \kw{let}\ \var{key1A}: \kwt{G} = \kwf{G8{\_}to{\_}G}(\kwf{exp{\_}div8}(\kwf{pow8}(\var{ephemeral{\_}pkX}), \var{ephemeral{\_}skA}))\ \kw{in}$\\
+\>$\quad \kw{let}\ \var{key2A}: \kwt{G} = \kwf{G8{\_}to{\_}G}(\kwf{exp{\_}div8}(\kwf{g8}, \kwf{mult}(\var{initskB}, \var{ephemeral{\_}skA})))\ \kw{in}$\\
+\>$\quad \kw{let}\ \var{secret1A}: \kwt{sym{\_}key} = \kwf{hash2key}(\kwf{hkey}, \kwf{}(\var{initN}, \var{key1A}, \var{key2A}))\ \kw{in}$\\
+\>$\quad \kw{let}\ \var{m}_{3}: \kwt{bitstring} = \kwf{}(\var{initN}, \kwf{G8{\_}to{\_}G}(\kwf{exp{\_}div8}(\kwf{g8}, \var{initskB})), \kwf{hash}(\kwf{hkey}, \kwf{G2bit}(\var{key1A})))\ \kw{in}$\\
+\>$\quad \kw{new}\ \var{r}_{2}: \kwt{sign{\_}seed};$\\
+\>$\quad \kw{let}\ \var{sign{\_}A}: \kwt{bitstring} = \kwf{sign{\_}r2}(\var{m}_{3}, \kwf{skgen2}(\var{initsignA}), \var{r}_{2})\ \kw{in}$\\
+\>$\quad \kw{let}\ \var{pkA}: \kwt{G} = \kwf{G8{\_}to{\_}G}(\kwf{exp{\_}div8}(\kwf{g8}, \var{initskA}))\ \kw{in}$\\
+\>$\quad \kw{let}\ \var{m3}: \kwt{bitstring} = \kwf{secret{\_}box}(\kwf{}(\var{sign{\_}A}, \var{pkA}, \kwf{pkgen2}(\var{initsignA})), \kwf{empty{\_}addata}, \var{secret1A}, \kwf{nonce0})\ \kw{in}$\\
+\>$\quad \coutput{\kwc{c3}[\var{i}]}{\var{m3}};$\\
+\>$\quad \cinput{\kwc{c4}[\var{i}]}{\var{m5}: \kwt{bitstring}};$\\
+\>$\quad \kw{let}\ \var{key3A}: \kwt{G} = \kwf{G8{\_}to{\_}G}(\kwf{exp{\_}div8}(\kwf{pow8}(\var{ephemeral{\_}pkX}), \var{initskA}))\ \kw{in}$\\
+\>$\quad \kw{let}\ \var{secret2A}: \kwt{sym{\_}key} = \kwf{bit2symkey}(\kwf{}(\var{initN}, \var{key1A}, \var{key2A}, \var{key3A}))\ \kw{in}$\\
+\>$\quad \kw{let}\ \kwf{injbot}(\var{sign{\_}B}: \kwt{bitstring}) = \kwf{secret{\_}box{\_}open}(\var{m5}, \kwf{empty{\_}addata}, \var{secret2A}, \kwf{nonce0})\ \kw{in}$\\
+\>$\quad \kw{let}\ \var{m1}_{4}: \kwt{bitstring} = \kwf{}(\var{initN}, \var{sign{\_}A}, \var{pkA}, \kwf{hash}(\kwf{hkey}, \kwf{G2bit}(\var{key1A})))\ \kw{in}$\\
+\>$\quad \kw{find}\ \var{u}_{1} = \var{ri}_{1} \leq \kwp{N1}\ \kw{suchthat}\ \kw{defined}(\var{r}_{3}[\var{ri}_{1}], \var{sign{\_}Y}[\var{ri}_{1}], \var{pkY}[\var{ri}_{1}], \var{key1B}[\var{ri}_{1}])\wedge (\kwf{hash}(\kwf{hkey}, \kwf{G2bit}(\var{key1A}))  =  \kwf{hash}(\kwf{hkey}, \kwf{G2bit}(\var{key1B}[\var{ri}_{1}]))) \wedge  (\var{pkA}  =  \var{pkY}[\var{ri}_{1}]) \wedge  (\var{sign{\_}A}  =  \var{sign{\_}Y}[\var{ri}_{1}]) \wedge  \kwf{check2}(\var{m1}_{4}, \kwf{pkgen2}(\var{initsignB}), \var{sign{\_}B})\ \kw{then}$\\
+\>$\quad \coutput{\kwc{c10}[\var{i}]}{\var{secret2A}};$\\
+\>$\quad \cinput{\kwc{finish}[\var{i}]}{}$\\
+\>$) \mid ($\\
+\>$\quad !^{\var{i}_{1} \leq \kwp{N1}}$\\
+\>$\quad \cinput{\kwc{c5}[\var{i}_{1}]}{\var{ephemeral{\_}pkY}: \kwt{G}, \var{hmacY}: \kwt{hmac{\_}key}};$\\
+\>$\quad \kw{if}\ (\var{hmacY}  =  \kwf{hmac}(\var{initN}, \kwf{G2bit}(\var{ephemeral{\_}pkY})))\ \kw{then}$\\
+\>$\quad \kw{new}\ \var{ephemeral{\_}skB}: \kwt{Z};$\\
+\>$\quad \kw{let}\ \var{ephemeral{\_}pkB}: \kwt{G} = \kwf{G8{\_}to{\_}G}(\kwf{exp{\_}div8}(\kwf{g8}, \var{ephemeral{\_}skB}))\ \kw{in}$\\
+\>$\quad \kw{let}\ \var{m2}: \kwt{bitstring} = \kwf{}(\var{ephemeral{\_}pkB}, \kwf{hmac}(\var{initN}, \kwf{G2bit}(\var{ephemeral{\_}pkB})))\ \kw{in}$\\
+\>$\quad \coutput{\kwc{c6}[\var{i}_{1}]}{\var{m2}};$\\
+\>$\quad \cinput{\kwc{c7}[\var{i}_{1}]}{\var{m4}: \kwt{bitstring}};$\\
+\>$\quad \kw{let}\ \var{key1B}: \kwt{G} = \kwf{G8{\_}to{\_}G}(\kwf{exp{\_}div8}(\kwf{pow8}(\var{ephemeral{\_}pkY}), \var{ephemeral{\_}skB}))\ \kw{in}$\\
+\>$\quad \kw{let}\ \var{key2B}: \kwt{G} = \kwf{G8{\_}to{\_}G}(\kwf{exp{\_}div8}(\kwf{pow8}(\var{ephemeral{\_}pkY}), \var{initskB}))\ \kw{in}$\\
+\>$\quad \kw{let}\ \var{secret1B}: \kwt{sym{\_}key} = \kwf{hash2key}(\kwf{hkey}, \kwf{}(\var{initN}, \var{key1B}, \var{key2B}))\ \kw{in}$\\
+\>$\quad \kw{let}\ \kwf{injbot}(\var{tuple}: \kwt{bitstring}) = \kwf{secret{\_}box{\_}open}(\var{m4}, \kwf{empty{\_}addata}, \var{secret1B}, \kwf{nonce0})\ \kw{in}$\\
+\>$\quad \kw{let}\ \kwf{}(\var{sign{\_}Y}: \kwt{bitstring}, \var{pkY}: \kwt{G}, \var{signYpk}: \kwt{pkey}) = \var{tuple}\ \kw{in}$\\
+\>$\quad \kw{if}\ (\var{signYpk}  =  \kwf{pkgen2}(\var{initsignA}))\ \kw{then}$\\
+\>$\quad \kw{let}\ \var{pkB}: \kwt{G} = \kwf{G8{\_}to{\_}G}(\kwf{exp{\_}div8}(\kwf{g8}, \var{initskB}))\ \kw{in}$\\
+\>$\quad \kw{let}\ \var{m}: \kwt{bitstring} = \kwf{}(\var{initN}, \var{pkB}, \kwf{hash}(\kwf{hkey}, \kwf{G2bit}(\var{key1B})))\ \kw{in}$\\
+\>$\quad \kw{find}\ \var{u}_{2} = \var{ri}_{2} \leq \kwp{N1}\ \kw{suchthat}\ \kw{defined}(\var{r}_{2}[\var{ri}_{2}], \var{key1A}[\var{ri}_{2}])\wedge (\kwf{hash}(\kwf{hkey}, \kwf{G2bit}(\var{key1B}))  =  \kwf{hash}(\kwf{hkey}, \kwf{G2bit}(\var{key1A}[\var{ri}_{2}]))) \wedge  \kwf{check2}(\var{m}, \kwf{pkgen2}(\var{initsignA}), \var{sign{\_}Y})\ \kw{then}$\\
+\>$\quad \kw{let}\ \var{key3B}: \kwt{G} = \kwf{G8{\_}to{\_}G}(\kwf{exp{\_}div8}(\kwf{pow8}(\var{pkY}), \var{ephemeral{\_}skB}))\ \kw{in}$\\
+\>$\quad \kw{let}\ \var{secret2B}: \kwt{sym{\_}key} = \kwf{hash2key}(\kwf{hkey}, \kwf{}(\var{initN}, \var{key1B}, \var{key2B}, \var{key3B}))\ \kw{in}$\\
+\>$\quad \kw{let}\ \var{m}_{4}: \kwt{bitstring} = \kwf{}(\var{initN}, \var{sign{\_}Y}, \var{pkY}, \kwf{hash}(\kwf{hkey}, \kwf{G2bit}(\var{key1B})))\ \kw{in}$\\
+\>$\quad \kw{new}\ \var{r}_{3}: \kwt{sign{\_}seed};$\\
+\>$\quad \kw{let}\ \var{m6}: \kwt{bitstring} = \kwf{secret{\_}box}(\kwf{sign{\_}r2}(\var{m}_{4}, \kwf{skgen2}(\var{initsignB}), \var{r}_{3}), \kwf{empty{\_}addata}, \var{secret2B}, \kwf{nonce0})\ \kw{in}$\\
+\>$\quad \coutput{\kwc{c8}[\var{i}_{1}]}{\var{m6}};$\\
+\>$\quad \cinput{\kwc{c11}[\var{i}_{1}]}{\var{m8}: \kwt{sym{\_}key}};$\\
+\>$\quad \kw{if}\ (\var{m8}  =  \var{secret2B})\ \kw{then}$\\
+\>$\quad \kw{event}\ \kwf{ServerEndSession}(\var{pkB}, \var{initN})$\\
+\>$)$\\
+\\
+\\
+Proved $\kw{event}(\kwf{ServerEndSession}(\var{x}, \var{y})) \Longrightarrow \kw{event}(\kwf{ClientConfirmNetwork}(\var{y}))$ in game -1\\
+\end{tabbing}
+$\mathsf{Adv}[\mathrm{Game}\ 1: $$\kw{event}(\kwf{ClientEndSession}(\var{x}, \var{y})) \Longrightarrow (\kw{event}(\kwf{ServerAccept}(\var{x})) \wedge \kw{event}(\kwf{ServerConfirmNetwork}(\var{y})))$$] \leq 1. / |\kwt{hmac{\_}key}| + \var{Psigncoll} + \var{Psign}(\kw{time}(\mathit{context\ for\ game}\ -1) + \kw{time} + (-1. + 2. \times \kwp{N1}) \times \kw{time}(\kwf{check}, \kw{max}(\kw{length}((\kwt{hmac{\_}key}, \kwt{G}, \kwt{bitstring}), \allowbreak \kw{length}(\kwf{hash}, \allowbreak \kw{length}(\kwf{G2bit}))), \allowbreak \kw{length}((\kwt{hmac{\_}key}, \kwt{bitstring}, \kwt{G}, \kwt{bitstring}), \allowbreak \kw{maxlength}(\var{sign{\_}A}), \allowbreak \kw{length}(\kwf{hash}, \allowbreak \kw{length}(\kwf{G2bit})))), \allowbreak \kw{max}(\kw{maxlength}(\var{sign{\_}Y}), \allowbreak \kw{maxlength}(\var{sign{\_}B}))), \allowbreak \kwp{N1}, \allowbreak \kw{maxlength}(\var{m}_{4})) + \mathsf{Adv}[\mathrm{Game}\ -1: $$\kw{event}(\kwf{ClientEndSession}(\var{x}, \var{y})) \Longrightarrow (\kw{event}(\kwf{ServerAccept}(\var{x})) \wedge \kw{event}(\kwf{ServerConfirmNetwork}(\var{y})))$$]$\\
+$\mathsf{Adv}[\mathrm{Game}\ -1: $$\kw{event}(\kwf{ClientEndSession}(\var{x}, \var{y})) \Longrightarrow (\kw{event}(\kwf{ServerAccept}(\var{x})) \wedge \kw{event}(\kwf{ServerConfirmNetwork}(\var{y})))$$] \leq 0$\\
+RESULT Proved $\kw{event}(\kwf{ClientEndSession}(\var{x}, \var{y})) \Longrightarrow (\kw{event}(\kwf{ServerAccept}(\var{x})) \wedge \kw{event}(\kwf{ServerConfirmNetwork}(\var{y})))$ up to probability $1. / |\kwt{hmac{\_}key}| + \var{Psigncoll} + \var{Psign}(\kw{time}(\mathit{context\ for\ game}\ -1) + \kw{time} + (-1. + 2. \times \kwp{N1}) \times \kw{time}(\kwf{check}, \kw{max}(\kw{length}((\kwt{hmac{\_}key}, \kwt{G}, \kwt{bitstring}), \allowbreak \kw{length}(\kwf{hash}, \allowbreak \kw{length}(\kwf{G2bit}))), \allowbreak \kw{length}((\kwt{hmac{\_}key}, \kwt{bitstring}, \kwt{G}, \kwt{bitstring}), \allowbreak \kw{maxlength}(\var{sign{\_}A}), \allowbreak \kw{length}(\kwf{hash}, \allowbreak \kw{length}(\kwf{G2bit})))), \allowbreak \kw{max}(\kw{maxlength}(\var{sign{\_}Y}), \allowbreak \kw{maxlength}(\var{sign{\_}B}))), \allowbreak \kwp{N1}, \allowbreak \kw{maxlength}(\var{m}_{4}))$\\
+$\mathsf{Adv}[\mathrm{Game}\ 1: $$\kw{event}(\kwf{ServerEndSession}(\var{x}, \var{y})) \Longrightarrow \kw{event}(\kwf{ClientConfirmNetwork}(\var{y}))$$] \leq \var{Psign}(\kw{time}(\mathit{context\ for\ game}\ -1) + \kw{time} + (-1. + \kwp{N1}) \times \kw{time}(\kwf{check}, \kw{maxlength}(\var{m}), \allowbreak \kw{maxlength}(\var{sign{\_}Y})), \allowbreak \kwp{N1}, \allowbreak \kw{maxlength}(\var{m}_{3})) + 2. / |\kwt{hmac{\_}key}| + \var{Psigncoll} + \var{Psign}(\kw{time}(\mathit{context\ for\ game}\ -1) + \kw{time} + (-1. + 2. \times \kwp{N1}) \times \kw{time}(\kwf{check}, \kw{max}(\kw{length}((\kwt{hmac{\_}key}, \kwt{G}, \kwt{bitstring}), \allowbreak \kw{length}(\kwf{hash}, \allowbreak \kw{length}(\kwf{G2bit}))), \allowbreak \kw{length}((\kwt{hmac{\_}key}, \kwt{bitstring}, \kwt{G}, \kwt{bitstring}), \allowbreak \kw{maxlength}(\var{sign{\_}A}), \allowbreak \kw{length}(\kwf{hash}, \allowbreak \kw{length}(\kwf{G2bit})))), \allowbreak \kw{max}(\kw{maxlength}(\var{sign{\_}Y}), \allowbreak \kw{maxlength}(\var{sign{\_}B}))), \allowbreak \kwp{N1}, \allowbreak \kw{maxlength}(\var{m}_{4})) + \mathsf{Adv}[\mathrm{Game}\ -1: $$\kw{event}(\kwf{ServerEndSession}(\var{x}, \var{y})) \Longrightarrow \kw{event}(\kwf{ClientConfirmNetwork}(\var{y}))$$]$\\
+$\mathsf{Adv}[\mathrm{Game}\ -1: $$\kw{event}(\kwf{ServerEndSession}(\var{x}, \var{y})) \Longrightarrow \kw{event}(\kwf{ClientConfirmNetwork}(\var{y}))$$] \leq 0$\\
+RESULT Proved $\kw{event}(\kwf{ServerEndSession}(\var{x}, \var{y})) \Longrightarrow \kw{event}(\kwf{ClientConfirmNetwork}(\var{y}))$ up to probability $\var{Psign}(\kw{time}(\mathit{context\ for\ game}\ -1) + \kw{time} + (-1. + \kwp{N1}) \times \kw{time}(\kwf{check}, \kw{maxlength}(\var{m}), \allowbreak \kw{maxlength}(\var{sign{\_}Y})), \allowbreak \kwp{N1}, \allowbreak \kw{maxlength}(\var{m}_{3})) + 2. / |\kwt{hmac{\_}key}| + \var{Psigncoll} + \var{Psign}(\kw{time}(\mathit{context\ for\ game}\ -1) + \kw{time} + (-1. + 2. \times \kwp{N1}) \times \kw{time}(\kwf{check}, \kw{max}(\kw{length}((\kwt{hmac{\_}key}, \kwt{G}, \kwt{bitstring}), \allowbreak \kw{length}(\kwf{hash}, \allowbreak \kw{length}(\kwf{G2bit}))), \allowbreak \kw{length}((\kwt{hmac{\_}key}, \kwt{bitstring}, \kwt{G}, \kwt{bitstring}), \allowbreak \kw{maxlength}(\var{sign{\_}A}), \allowbreak \kw{length}(\kwf{hash}, \allowbreak \kw{length}(\kwf{G2bit})))), \allowbreak \kw{max}(\kw{maxlength}(\var{sign{\_}Y}), \allowbreak \kw{maxlength}(\var{sign{\_}B}))), \allowbreak \kwp{N1}, \allowbreak \kw{maxlength}(\var{m}_{4}))$\\
+RESULT $\kw{time}(\mathit{context\ for\ game}\ -1) = \kwp{N1} \times \kw{time}((\kwt{hmac{\_}key}, \kwt{bitstring}, \kwt{G}, \kwt{bitstring}), \kw{maxlength}(\var{sign{\_}A}), \allowbreak \kw{length}(\kwf{hash}, \allowbreak \kw{length}(\kwf{G2bit}))) + \kwp{N1} \times \kw{time}(\kwf{secret{\_}box{\_}open}, \kw{maxlength}(\var{m5}), \allowbreak \kw{length}(\kwf{empty{\_}addata})) + \kwp{N1} \times \kw{time}(\kw{let}\ \kwf{injbot}, \kw{maxlength}(\var{sign{\_}B})) + \kwp{N1} \times \kw{time}(\kwf{bit2symkey}, \kw{length}((\kwt{hmac{\_}key}, \kwt{G}, \kwt{G}, \kwt{G}))) + \kwp{N1} \times \kw{time}(\kwf{secret{\_}box}, \kw{length}((\kwt{bitstring}, \kwt{G}, \kwt{pkey}), \allowbreak \kw{maxlength}(\var{sign{\_}A})), \allowbreak \kw{length}(\kwf{empty{\_}addata})) + \kwp{N1} \times \kw{time}((\kwt{bitstring}, \kwt{G}, \kwt{pkey}), \kw{maxlength}(\var{sign{\_}A})) + \kwp{N1} \times \kw{time}(\kwf{sign{\_}r}, \kw{maxlength}(\var{m}_{3})) + \kwp{N1} \times \kw{time}(\kwf{skgen}) + \kwp{N1} \times \kw{time}(\kwf{mult}) + 5. \times \kwp{N1} \times \kw{time}((\kwt{[1,N1]})) + \kwp{N1} \times \kw{time}(\kwf{secret{\_}box}, \kw{length}(\kwf{sign{\_}r}, \allowbreak \kw{maxlength}(\var{m}_{4})), \allowbreak \kw{length}(\kwf{empty{\_}addata})) + \kwp{N1} \times \kw{time}((\kwt{hmac{\_}key}, \kwt{bitstring}, \kwt{G}, \kwt{bitstring}), \kw{maxlength}(\var{sign{\_}Y}), \allowbreak \kw{length}(\kwf{hash}, \allowbreak \kw{length}(\kwf{G2bit}))) + 4. \times \kwp{N1} \times \kw{time}(\kwf{hash}, \kw{length}(\kwf{G2bit})) + 8. \times \kwp{N1} \times \kw{time}(\kwf{G2bit}) + \kwp{N1} \times \kw{time}(\kwf{hash2key}, \kw{length}((\kwt{hmac{\_}key}, \kwt{G}, \kwt{G}, \kwt{G}))) + 2. \times \kwp{N1} \times \kw{time}((\kwt{hmac{\_}key}, \kwt{G}, \kwt{G}, \kwt{G})) + 11. \times \kwp{N1} \times \kw{time}(\kwf{G8{\_}to{\_}G}) + 11. \times \kwp{N1} \times \kw{time}(\kwf{exp{\_}div8}) + 5. \times \kwp{N1} \times \kw{time}(\kwf{pow8}) + 2. \times \kwp{N1} \times \kw{time}((\kwt{hmac{\_}key}, \kwt{G}, \kwt{bitstring}), \kw{length}(\kwf{hash}, \allowbreak \kw{length}(\kwf{G2bit}))) + 2. \times \kwp{N1} \times \kw{time}(\kwf{pkgen}) + \kwp{N1} \times \kw{time}(\kw{let}\ (\kwt{bitstring}, \kwt{G}, \kwt{pkey}), \kw{maxlength}(\var{sign{\_}Y})) + \kwp{N1} \times \kw{time}(\kwf{secret{\_}box{\_}open}, \kw{maxlength}(\var{m4}), \allowbreak \kw{length}(\kwf{empty{\_}addata})) + \kwp{N1} \times \kw{time}(\kw{let}\ \kwf{injbot}, \kw{maxlength}(\var{tuple})) + 2. \times \kwp{N1} \times \kw{time}(\kwf{hash2key}, \kw{length}((\kwt{hmac{\_}key}, \kwt{G}, \kwt{G}))) + 2. \times \kwp{N1} \times \kw{time}((\kwt{hmac{\_}key}, \kwt{G}, \kwt{G})) + 2. \times \kwp{N1} \times \kw{time}((\kwt{G}, \kwt{hmac{\_}key})) + 4. \times \kwp{N1} \times \kw{time}(\kwf{hmac}, \kw{length}(\kwf{G2bit}))$\\
+RESULT $\kw{time}(\mathit{context\ for\ game}\ -1) = (2. \times \kwp{N1} \times \kwp{N1} + 8. \times \kwp{N1}) \times \kw{time}(\kwf{G2bit}) + (2. \times \kwp{N1} \times \kwp{N1} + 4. \times \kwp{N1}) \times \kw{time}(\kwf{hash}, \kw{length}(\kwf{G2bit})) + \kwp{N1} \times \kwp{N1} \times \kw{time}(\kwf{=} \kwt{bitstring}, \kw{length}(\kwf{hash}, \allowbreak \kw{length}(\kwf{G2bit})), \allowbreak \kw{length}(\kwf{hash}, \allowbreak \kw{length}(\kwf{G2bit}))) + \kwp{N1} \times \kwp{N1} \times \kw{time}(\kwf{=} \kwt{bitstring}, \kw{maxlength}(\var{sign{\_}A}), \allowbreak \kw{maxlength}(\var{sign{\_}Y})) + \kwp{N1} \times \kwp{N1} \times \kw{time}(\kwf{pkgen2}) + \kwp{N1} \times \kwp{N1} \times \kw{time}(\kwf{check2}, \kw{maxlength}(\var{m1}_{4}), \allowbreak \kw{maxlength}(\var{sign{\_}B})) + \kwp{N1} \times \kw{time}((\kwt{hmac{\_}key}, \kwt{bitstring}, \kwt{G}, \kwt{bitstring}), \kw{maxlength}(\var{sign{\_}A}), \allowbreak \kw{length}(\kwf{hash}, \allowbreak \kw{length}(\kwf{G2bit}))) + \kwp{N1} \times \kw{time}(\kwf{secret{\_}box{\_}open}, \kw{maxlength}(\var{m5}), \allowbreak \kw{length}(\kwf{empty{\_}addata})) + \kwp{N1} \times \kw{time}(\kw{let}\ \kwf{injbot}, \kw{maxlength}(\var{sign{\_}B})) + \kwp{N1} \times \kw{time}(\kwf{bit2symkey}, \kw{length}((\kwt{hmac{\_}key}, \kwt{G}, \kwt{G}, \kwt{G}))) + \kwp{N1} \times \kw{time}(\kwf{secret{\_}box}, \kw{length}((\kwt{bitstring}, \kwt{G}, \kwt{pkey}), \allowbreak \kw{maxlength}(\var{sign{\_}A})), \allowbreak \kw{length}(\kwf{empty{\_}addata})) + \kwp{N1} \times \kw{time}((\kwt{bitstring}, \kwt{G}, \kwt{pkey}), \kw{maxlength}(\var{sign{\_}A})) + \kwp{N1} \times \kw{time}(\kwf{mult}) + 5. \times \kwp{N1} \times \kw{time}((\kwt{[1,N1]})) + \kwp{N1} \times \kw{time}(\kwf{secret{\_}box}, \kw{length}(\kwf{sign{\_}r2}, \allowbreak \kw{maxlength}(\var{m}_{4})), \allowbreak \kw{length}(\kwf{empty{\_}addata})) + \kwp{N1} \times \kw{time}(\kwf{sign{\_}r2}, \kw{maxlength}(\var{m}_{4})) + \kwp{N1} \times \kw{time}(\kwf{skgen2}) + \kwp{N1} \times \kw{time}((\kwt{hmac{\_}key}, \kwt{bitstring}, \kwt{G}, \kwt{bitstring}), \kw{maxlength}(\var{sign{\_}Y}), \allowbreak \kw{length}(\kwf{hash}, \allowbreak \kw{length}(\kwf{G2bit}))) + \kwp{N1} \times \kw{time}(\kwf{hash2key}, \kw{length}((\kwt{hmac{\_}key}, \kwt{G}, \kwt{G}, \kwt{G}))) + 2. \times \kwp{N1} \times \kw{time}((\kwt{hmac{\_}key}, \kwt{G}, \kwt{G}, \kwt{G})) + 11. \times \kwp{N1} \times \kw{time}(\kwf{G8{\_}to{\_}G}) + 11. \times \kwp{N1} \times \kw{time}(\kwf{exp{\_}div8}) + 5. \times \kwp{N1} \times \kw{time}(\kwf{pow8}) + 2. \times \kwp{N1} \times \kw{time}((\kwt{hmac{\_}key}, \kwt{G}, \kwt{bitstring}), \kw{length}(\kwf{hash}, \allowbreak \kw{length}(\kwf{G2bit}))) + \kwp{N1} \times \kw{time}(\kw{let}\ (\kwt{bitstring}, \kwt{G}, \kwt{pkey}), \kw{maxlength}(\var{sign{\_}Y})) + \kwp{N1} \times \kw{time}(\kwf{secret{\_}box{\_}open}, \kw{maxlength}(\var{m4}), \allowbreak \kw{length}(\kwf{empty{\_}addata})) + \kwp{N1} \times \kw{time}(\kw{let}\ \kwf{injbot}, \kw{maxlength}(\var{tuple})) + 2. \times \kwp{N1} \times \kw{time}(\kwf{hash2key}, \kw{length}((\kwt{hmac{\_}key}, \kwt{G}, \kwt{G}))) + 2. \times \kwp{N1} \times \kw{time}((\kwt{hmac{\_}key}, \kwt{G}, \kwt{G})) + 2. \times \kwp{N1} \times \kw{time}((\kwt{G}, \kwt{hmac{\_}key})) + 4. \times \kwp{N1} \times \kw{time}(\kwf{hmac}, \kw{length}(\kwf{G2bit}))$\\
+All queries proved.\\
+
+\end{document}

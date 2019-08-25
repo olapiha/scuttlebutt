@@ -1,0 +1,218 @@
+(*----------------------------------*)
+(*Types															*)
+(*----------------------------------*)
+
+type G.
+type exponent.
+type hmac_key.
+type sym_key.
+type nonce.
+type sk.
+type pk.
+
+
+(*----------------------------------*)
+(*Constants													*)
+(*----------------------------------*)
+
+free c: channel.
+free skA: sk [private].
+free skB: sk [private].
+free skC: sk [private].
+free m1: bitstring [private].
+free m2: bitstring [private].
+free m3: bitstring [private].
+const failmsg: bitstring [data].
+const zero:sym_key [data].
+const nonce0: nonce [data].
+const recipients: bitstring [data].
+
+event Sentmessage(pk, pk, bitstring).
+event Receivedmessage(pk, pk, bitstring).
+
+(*----------------------------------*)
+(*Primitives												*)
+(*----------------------------------*)
+
+
+
+(*Type conversions*)
+fun pk2bit(pk): bitstring [typeConverter].
+fun bit2pk(bitstring):pk     [typeConverter].
+fun symkey2bit(sym_key): bitstring [typeConverter].
+fun pk2symkey(pk): sym_key [typeConverter].
+
+
+fun get_pk(sk): pk.
+fun valid(sk):sk.
+fun weak(sk):sk.
+
+(*DH*)
+fun exp(pk, sk): sym_key.
+equation forall x:sk, y:sk; exp(get_pk(x), y) = exp(get_pk(y), x).
+
+
+fun dhexp(pk, sk): sym_key
+reduc forall b:sk, a:sk; dhexp(get_pk(weak(a)), b) = zero
+otherwise forall b:sk, a:sk; dhexp(get_pk(a), weak(b)) = zero
+otherwise forall b:sk, a:sk; dhexp(get_pk(a), b) = exp(get_pk(a), b).
+
+
+(*Symmetric Encryption*)
+fun enc(bitstring, sym_key): bitstring.
+reduc forall m: bitstring, k: sym_key; dec(enc(m, k), k) = m.
+
+(*HMAC*)
+fun hmac(bitstring, hmac_key): bitstring.
+reduc forall m: bitstring, k: hmac_key; checkhmac(hmac(m, k), m, k) = true.
+
+(*Hash*)
+fun hash(bitstring): bitstring.
+
+(*Hash to a symetric key*)
+fun hash_to_key(bitstring): sym_key.
+
+(*signatures*)
+fun sign(bitstring, sk): bitstring.
+fun checksign(bitstring, pk, bitstring): bool
+reduc forall m: bitstring, k: sk; checksign(sign(m,k), get_pk(k), m) = true
+otherwise forall m1: bitstring, m2:bitstring, k: sk; checksign(sign(m1, weak(k)), get_pk(weak(k)), m2) = true
+otherwise forall str1:bitstring, pkey: pk, str2: bitstring; checksign(str1, pkey, str2) = false.
+reduc forall m: bitstring, k1: sk, k2: sk; resign(sign(m,k1), k2) = sign(m,k2).
+
+
+fun incnonce(nonce):nonce.
+reduc forall n:nonce; decnonce(incnonce(n)) = n.
+
+fun aeadenc(sym_key, nonce, bitstring): bitstring.
+
+(*reduc forall k:sym_key, n:nonce, m:bitstring;
+		pre_aeaddec( k, n, aeadenc( k, n, m)) =  m.
+
+letfun decfailhandler(m:bitstring or fail) =
+  let mes = m in (true, mes) else (false, failmsg).
+
+letfun aeaddec(k:sym_key, n:nonce, c: bitstring) =
+  decfailhandler(pre_aeaddec(k,n,c)).
+*)
+fun aeaddec(sym_key, nonce, bitstring): bitstring
+reduc forall k:sym_key, n:nonce, m:bitstring;
+  	aeaddec(k, n, aeadenc( k, n, m)) = (true, m)
+otherwise forall k:sym_key, n: nonce, str: bitstring;
+    aeaddec(k, n, str) = (false, failmsg).
+
+
+
+(*----------------------------------*)
+(*Queries														*)
+(*----------------------------------*)
+
+query attacker(m1) phase 0.
+query attacker(m2) phase 0.
+query attacker(m3) phase 0.
+query pkSender: pk, pkReceiver:pk, mes: bitstring; event (Receivedmessage(pkSender, pkReceiver, mes)) ==> event (Sentmessage(pkSender, pkReceiver, mes)).
+
+
+(*query event (Sentmessage(exp(g, skA), exp(g, skC), m1)).*)
+(*query event (Receivedmessage(get_pk(skA), get_pk(skC), m1)).*)
+query event (Receivedmessage(get_pk(skC), get_pk(skB), m3)).
+
+
+(*----------------------------------*)
+(*Principals												*)
+(*----------------------------------*)
+
+let EncryptM42(skMe:sk, pkReceiver1:pk, pkReceiver2:pk, m_out: bitstring) =
+  let pkMe = get_pk(skMe) in
+  new h: sk;
+  new y: sym_key;
+  new nonce: nonce;
+  let pkh = get_pk(h) in
+  let key1 = dhexp(pkReceiver1, h) in
+  let key2 = dhexp(pkReceiver2, h) in
+  let header = (y, recipients) in
+  let enc1 = aeadenc(key1, nonce, header) in
+  let enc2 = aeadenc(key2, nonce, header) in
+  let encM = aeadenc(y, nonce, m_out) in
+  let sig = sign((nonce, pkh, enc1, enc2, encM), skMe) in
+  event Sentmessage(pkMe, pkReceiver1, m_out);
+  event Sentmessage(pkMe, pkReceiver2, m_out);
+  out(c, nonce);
+  out(c, pkh);
+  out(c, enc1);
+  out(c, enc2);
+  out(c, encM);
+  out(c, sig).
+
+let DecryptM42(skMe:sk, pkSender:pk) =
+  let pkMe = get_pk(skMe) in
+  in(c, nonce: nonce);
+  in(c, pkh: pk);
+  in(c, enc1: bitstring);
+  in(c, enc2: bitstring);
+  in(c, encM: bitstring);
+  in(c, sig: bitstring);
+  let key = dhexp(pkh, skMe) in
+  let (=true) = checksign(sig, pkSender, (nonce, pkh, enc1, enc2, encM)) in
+  let (=true, header: bitstring) = aeaddec(key, nonce, enc1) in
+  (
+  let (y: sym_key, foo: bitstring)  = header in
+  let (b:bool, m_in: bitstring) = aeaddec(y, nonce, encM) in
+  event Receivedmessage(pkSender, pkMe, m_in)
+  )
+  else
+  let (=true, header: bitstring) = aeaddec(key, nonce, enc2) in
+  let (y: sym_key, foo: bitstring) = header in
+  let (b:bool, m_in: bitstring) = aeaddec( y, nonce, encM) in
+  event Receivedmessage(pkSender, pkMe, m_in).
+
+
+let EncryptM41(skMe:sk, pkReceiver:pk, mes: bitstring) =
+  let pkMe = get_pk(skMe) in
+  new h: sk;
+  new y: sym_key;
+  new nonce: nonce;
+  let pkh = get_pk(h) in
+  let key1 = dhexp(pkReceiver, h) in
+  let header = (y, recipients) in
+  let enc1 = aeadenc(key1, nonce, header) in
+  let encM = aeadenc(y, nonce, mes) in
+  event Sentmessage(pkMe, pkReceiver, mes);
+  let sig = sign((nonce, pkh, enc1, encM), skMe) in
+  out(c, nonce);
+  out(c, pkh);
+  out(c, enc1);
+  out(c, encM);
+  out(c, sig).
+
+let DecryptM41(skMe:sk, pkSender:pk) =
+  let pkMe = get_pk(skMe) in
+  in(c, nonce: nonce);
+  in(c, pkh: pk);
+  in(c, enc1: bitstring);
+  in(c, encM: bitstring);
+  in(c, sig:bitstring);
+  let key = dhexp(pkh, skMe) in
+  if checksign(sig, pkSender, (nonce, pkh, enc1, encM)) then
+  let (=true, header: bitstring) = aeaddec(key, nonce, enc1) in
+  let (y: sym_key, foo: bitstring)  = header in
+  let (=true, m1: bitstring) = aeaddec(y, nonce, encM) in
+  event Receivedmessage(pkSender, pkMe, m1).
+
+(*----------------------------------*)
+(*Main process											*)
+(*----------------------------------*)
+
+process
+	!(
+    !(
+      !EncryptM42(skA, get_pk(skB), get_pk(skC), m1) | !DecryptM42(skB, get_pk(skA)) | !DecryptM42(skC, get_pk(skA))
+    ) |
+    !(
+      !EncryptM42(skB, get_pk(skA), get_pk(skC), m2) | !DecryptM42(skA, get_pk(skB)) | !DecryptM42(skC, get_pk(skB))
+    ) |
+    !(
+      !EncryptM41(skC, get_pk(skA), m3) | !DecryptM41(skB, get_pk(skC)) | !DecryptM41(skA, get_pk(skC))
+    ) |
+    (phase 1; out(c,skB); out(c, skC); out(c, skA))
+  )

@@ -1,0 +1,219 @@
+(*----------------------------------*)
+(*Proof parameters  								*)
+(*----------------------------------*)
+
+
+set interactiveMode = true.
+set useKnownEqualitiesWithFunctionsInMatching = true.
+(*----------------------------------*)
+(*Types															*)
+(*----------------------------------*)
+
+type hmac_key [large, fixed].
+type hash_key [nonuniform, fixed].
+type sym_key [large, fixed].
+type nonce [bounded].(*Not sure*)
+type subG [large, bounded].
+type D [fixed].
+type message [bounded].
+type seed [large, fixed].
+type skey [bounded].
+type pkey [bounded].
+
+type G [bounded,large].  (* type of public keys *)
+type G8 [bounded,large]. (* type of { X^k, X \in F_p } *)
+fun G_to_bitstring(G): bitstring [data].
+type Z [bounded,large,nonuniform].   (* type of exponents (must be "bounded" and
+                               "large", is the set of multiples of k prime to qq' modulo kqq'.) *)
+
+(*----------------------------------*)
+(*Constants													*)
+(*----------------------------------*)
+
+param N1, N2.
+
+channel c1, c2, c3, c4, c5, c6, c7, c8, c9, c10, c11, start, begin, finish.
+const nonce0: nonce.
+const empty_addata: bitstring.
+const hkey: hash_key.
+
+event ClientAccept(G).
+event ServerAccept(G).
+event ClientEndSession(G,hmac_key).
+event ServerEndSession(G,hmac_key).
+event ClientConfirmNetwork(hmac_key).
+event ServerConfirmNetwork(hmac_key).
+event Sentmessage(G, message).
+event Receivedmessage(G, message).
+
+(*----------------------------------*)
+(*Primitives												*)
+(*----------------------------------*)
+
+(*Type conversions*)
+fun G2bit(G): bitstring [typeConverter].
+fun bit2G(bitstring):G     [typeConverter].
+fun symkey2bit(sym_key): bitstring [typeConverter].
+fun G2symkey(G): sym_key [typeConverter].
+fun mssg2bit(message): bitstring [typeConverter].
+fun bit2symkey(bitstring): sym_key [typeConverter].
+
+(*DH*)
+
+(**** Gap Diffie-Hellman ****)
+proba P_GDH.
+expand DH_X25519(
+  (* types *)
+  G,          (* Public keys *)
+  Z,          (* Exponents *)
+  g,          (* base point *)
+  exp,        (* exponentiation function *)
+  mult,       (* multiplication function for exponents *)
+  G8,         (*???????*)
+  g8,         (*the generator of G8*)
+  exp_div8,   (*exp in G8?*)
+  exp_div8',  (* a symbol that replaces exp_div8 after game transformation *)
+  pow8,
+  G8_to_G,
+  zero,
+  zero8
+).
+
+expand GDH(
+  (* types *)
+  G8,           (* Group elements *)
+  Z,            (* Exponents *)
+  g8,           (* a generator of the group *)
+  exp_div8,     (* exponentiation function *)
+  exp_div8',    (* a symbol that replaces exp_div8 after game transformation *)
+  mult,         (* multiplication function for exponents *)
+  (* probabilities *)
+  P_GDH         (* probability of breaking the GDH assumption *)
+).
+
+
+(*HMAC*)(*hmac function is modeled as a PRF *)
+(*Does scuttlebutts framework provide with large output?*)
+(*proba Pprf.
+expand PRF(hmac_key, bitstring, hmac_key, hmac, Pprf).*)
+expand ROM_hash(hmac_key, bitstring, hmac_key, hmac, hashoracle1, qH).
+
+(*Hash function SHA256which is not proven to be secure*)
+(*We assume in this model that it is collision resistant and preimage resistant*)
+proba Phash.
+expand CollisionResistant_hash(hash_key, bitstring, bitstring, hash, hashoracle, Phash).
+
+(*Hash function SHA256 with diffeent output type*)
+(*We assume in this model that it is collision resistant and preimage resistant*)
+proba Phash2key.
+expand CollisionResistant_hash(hash_key, bitstring, sym_key, hash2key, hash2keyoracle, Phash2key).
+
+(*signatures*)
+(*UF-CMA malleable probabilistic signature*)
+proba Psign.
+proba Psigncoll.
+expand UF_CMA_proba_signature(seed, pkey, skey, bitstring, bitstring, skgen, pkgen, sign, check, Psign, Psigncoll).
+
+(*secret box*)
+proba Penc.
+proba Pencctxt.
+expand AEAD_nonce(sym_key, bitstring, bitstring, bitstring, nonce, secret_box, secret_box_open, injbot, zeroer, Penc, Pencctxt).
+
+(*symmetric encryption for communication after the handshake.*)
+proba Penc1.
+expand IND_CCA2_sym_enc(sym_key, message, bitstring, enc, dec, injbot1, Zeroer, Penc1).
+
+(*ESSENTIAL FOR THE MODEL TO WORK*)
+const Zkey : message.
+equation forall y:message;
+	Zeroer(y) = Zkey.
+
+
+(*----------------------------------*)
+(*Queries														*)
+(*----------------------------------*)
+
+(*query secret secret_bit.*)
+(*query secret initskA.*)
+(*query secret initskB.*)
+(*event (ClientAccept(x))&&*)
+query x:G, y:hmac_key; event (ServerEndSession(x, y)) ==> event(ClientConfirmNetwork(y)).
+query x: G, y: hmac_key ; event(ClientEndSession(x, y)) ==> event(ServerAccept(x)) && event(ServerConfirmNetwork(y)).
+(*query pkSender: G, mes: message; inj-event (Receivedmessage(pkSender, mes)) ==> inj-event (Sentmessage(pkSender, mes)).*)
+
+
+(*----------------------------------*)
+(*Principals												*)
+(*----------------------------------*)
+
+let Alice(skA:Z, signA: seed, signBpk: pkey, pkBAlice:G, NAlice: hmac_key, m: message, key: sym_key) =
+  in(c9, ());
+  let pkA:G = exp(g, skA) in
+  let signAsk:skey = skgen(signA) in
+  let signApk:pkey = pkgen(signA) in
+	new ephemeral_skA: Z;
+	let ephemeral_pkA:G = exp(g, ephemeral_skA) in
+	let m1:bitstring = (ephemeral_pkA, hmac(NAlice, G2bit(ephemeral_pkA))) in
+	out(c1, m1);
+	in(c2, (ephemeral_pkX:G, hmacX: hmac_key));
+	if hmacX = hmac(NAlice, G2bit(ephemeral_pkX)) then
+  event ClientConfirmNetwork(NAlice);
+  let key1A:G = exp(ephemeral_pkX, ephemeral_skA) in
+  let key2A:G = exp(pkBAlice, ephemeral_skA) in
+  let secret1A:sym_key = hash2key(hkey, (NAlice, key1A, key2A)) in
+  let sign_A:bitstring = sign((NAlice, pkBAlice, hash(hkey, G2bit(key1A))), signAsk) in
+  let m3:bitstring = secret_box((sign_A, pkA, signApk), empty_addata, secret1A, nonce0) in
+	out(c3, m3);
+	in (c4, m5: bitstring);
+	let key3A = exp(ephemeral_pkX, skA) in
+	let (secret2A:sym_key) = bit2symkey((NAlice, key1A, key2A, key3A)) in
+	let injbot(sign_B: bitstring) = secret_box_open(m5, empty_addata, secret2A, nonce0) in
+  if check((NAlice, sign_A, pkA, hash(hkey ,G2bit(key1A))), signBpk, sign_B) then
+  event ClientAccept(pkBAlice);
+  out(c10, secret2A);
+  in(finish, ());
+  event ClientEndSession(pkA, NAlice).
+
+let Bob(skB:Z, signB: seed, NBob: hmac_key, signA: seed, key: sym_key) =
+	in(c5, (ephemeral_pkY:G, hmacY: hmac_key));
+  let pkB = exp(g, skB) in
+  let signBsk = skgen(signB) in
+	if hmacY = hmac(NBob, G2bit(ephemeral_pkY)) then
+	event ServerConfirmNetwork(NBob);
+	new ephemeral_skB: Z;
+	let ephemeral_pkB = exp(g, ephemeral_skB) in
+	let m2 = (ephemeral_pkB, hmac(NBob, G2bit(ephemeral_pkB))) in
+	out(c6, m2);
+	in(c7, m4: bitstring);
+	let key1B = exp(ephemeral_pkY, ephemeral_skB) in
+	let key2B = exp(ephemeral_pkY, skB) in
+	let secret1B = hash2key(hkey, (NBob, key1B, key2B)) in
+	let injbot(tuple) = secret_box_open(m4, empty_addata, secret1B, nonce0) in
+  let (sign_Y: bitstring, pkY: G, signYpk: pkey) = tuple in
+  if signYpk = pkgen(signA) then
+	if check((NBob, pkB, hash(hkey, G2bit(key1B))), signYpk, sign_Y) then
+	let key3B = exp(pkY, ephemeral_skB) in
+	let secret2B = hash2key(hkey, (NBob, key1B, key2B, key3B)) in
+	let m6:bitstring = secret_box(sign((NBob, sign_Y, pkY, hash(hkey, G2bit(key1B))), signBsk), empty_addata, secret2B, nonce0) in
+	event ServerAccept(pkY);
+	out(c8, m6);
+  in(c11, m8: sym_key);
+  if m8 = secret2B then
+  event ServerEndSession(pkB, NBob).
+
+(*----------------------------------*)
+(*Main process											*)
+(*----------------------------------*)
+
+process
+	in(start, ());
+  new initN: hmac_key;
+  new initsignA: seed;
+  new initsignB: seed;
+  new initskA: Z;
+  new initskB: Z;
+  new initm: message;
+  new initkey: sym_key;
+  out(begin, (nonce0));
+  (! i <= N1 Alice(initskA, initsignA, pkgen(initsignB), exp(g, initskB), initN, initm, initkey) |
+  	(! i <= N1 Bob(initskB, initsignB, initN, initsignA, initkey) ))

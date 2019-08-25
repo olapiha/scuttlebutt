@@ -1,0 +1,167 @@
+(*----------------------------------*)
+(*Types															*)
+(*----------------------------------*)
+
+type hmac_key.
+type sym_key.
+type nonce.
+type sk.
+type pk.
+
+(*----------------------------------*)
+(*Constants													*)
+(*----------------------------------*)
+
+free c: channel.
+free N: hmac_key [private].
+free skA: sk [private].
+free skB: sk [private].
+free skInv: sk [private].
+free m: bitstring [private].
+const failmsg: bitstring [data].
+const zero:sym_key [data].
+const nonce0: nonce [data].
+
+event ClientAccept(pk).
+event ServerAccept(pk).
+event ClientEndSession(pk,hmac_key).
+event ServerEndSession(pk,hmac_key).
+event ClientConfirmNetwork(hmac_key).
+event ServerConfirmNetwork(hmac_key).
+event Sentmessage(pk, bitstring).
+event Receivedmessage(pk, bitstring).
+
+(*----------------------------------*)
+(*Primitives												*)
+(*----------------------------------*)
+
+(*Type conversions*)
+fun pk2bit(pk): bitstring [typeConverter].
+fun bit2pk(bitstring):pk     [typeConverter].
+fun symkey2bit(sym_key): bitstring [typeConverter].
+fun pk2symkey(pk): sym_key [typeConverter].
+
+
+fun get_pk(sk): pk.
+fun valid(sk):sk.
+fun weak(sk):sk.
+
+(*DH*)
+fun exp(pk, sk): sym_key.
+equation forall x:sk, y:sk; exp(get_pk(x), y) = exp(get_pk(y), x).
+
+
+fun dhexp(pk, sk): sym_key
+reduc forall b:sk, a:sk; dhexp(get_pk(weak(a)), b) = zero
+otherwise forall b:sk, a:sk; dhexp(get_pk(a), weak(b)) = zero
+otherwise forall b:sk, a:sk; dhexp(get_pk(a), b) = exp(get_pk(a), b).
+
+(*Symmetric Encryption*)
+fun enc(bitstring, sym_key): bitstring.
+reduc forall m: bitstring, k: sym_key; dec(enc(m, k), k) = m.
+
+(*HMAC*)
+fun hmac(bitstring, hmac_key): bitstring.
+reduc forall m: bitstring, k: hmac_key; checkhmac(hmac(m, k), m, k) = true.
+
+(*Hash*)
+fun hash(bitstring): bitstring.
+
+(*Hash to a symetric key*)
+fun hash_to_key(bitstring): sym_key.
+
+(*signatures*)
+fun sign(bitstring, sk): bitstring.
+fun checksign(bitstring, pk, bitstring): bool
+reduc forall m: bitstring, k: sk; checksign(sign(m,k), get_pk(k), m) = true
+otherwise forall m1: bitstring, m2:bitstring, k: sk; checksign(sign(m1, weak(k)), get_pk(weak(k)), m2) = true
+otherwise forall str1:bitstring, pkey: pk, str2: bitstring; checksign(str1, pkey, str2) = false.
+reduc forall m: bitstring, k1: sk, k2: sk; resign(sign(m,k1), k2) = sign(m,k2).
+
+
+fun incnonce(nonce):nonce.
+reduc forall n:nonce; decnonce(incnonce(n)) = n.
+
+fun aeadenc(sym_key, nonce, bitstring): bitstring.
+fun aeaddec(sym_key, nonce, bitstring): bitstring
+reduc forall k:sym_key, n:nonce, m:bitstring;
+  	aeaddec(k, n, aeadenc( k, n, m)) = (true, m)
+otherwise forall k:sym_key, n: nonce, str: bitstring;
+    aeaddec(k, n, str) = (false, failmsg).
+
+
+
+(*----------------------------------*)
+(*Queries														*)
+(*----------------------------------*)
+
+(*query attacker(m).*)
+(*query attacker(get_pk(skInv)).
+query attacker(get_pk(skB)) phase 0.*)
+query x:pk, y:hmac_key; event (ServerEndSession(x, y)) ==> event (ClientAccept(x))&&event(ClientConfirmNetwork(y)).
+query x:pk, y:hmac_key; event (ClientEndSession(x, y)) ==> event (ServerAccept(x))&&event(ServerConfirmNetwork(y)).
+(*query attacker(N).*)
+
+
+(* query secret m [real_or_random]. *)
+
+(*----------------------------------*)
+(*Principals												*)
+(*----------------------------------*)
+
+let Alice(skA:sk, pkB:pk, skInv: sk) =
+  let pkA = get_pk(skA) in
+  let pkInv = get_pk(skInv) in
+	new ephemeral_skA: sk;
+	let ephemeral_pkA = get_pk(ephemeral_skA) in
+	let m1 = (ephemeral_pkA, hmac(pk2bit(ephemeral_pkA), N)) in
+	out(c, m1);
+	in(c, (ephemeral_pkX:pk, hmacX: bitstring));
+	if checkhmac(hmacX, pk2bit(ephemeral_pkX), N) then
+  event ClientConfirmNetwork(N);
+	let key1 = dhexp(ephemeral_pkX, ephemeral_skA) in
+	let key2 = dhexp(pkB, ephemeral_skA) in
+	let secret1 = hash_to_key((N, key1, key2)) in
+	let sign_Inv = sign((N, pkB, hash(symkey2bit(key1))), skInv) in
+	let m3 = aeadenc( secret1, nonce0, (sign_Inv, pkInv)) in
+	out(c, m3);
+	let key3 = dhexp(ephemeral_pkX, skInv) in
+	let secret2 = hash_to_key((N, key1, key2, key3)) in
+	in (c, m4: bitstring);
+	let (=true, sign_B: bitstring) = aeaddec( secret2, nonce0, m4) in
+	if checksign(sign_B, pkB, (N, sign_Inv, pkInv, hash(symkey2bit(key1)))) then
+	event ClientAccept(pkB);
+	event ClientEndSession(pkInv, N).
+
+let Bob(skB:sk) =
+  let pkB = get_pk(skB) in
+	in(c, (ephemeral_pkY:pk, hmacY: bitstring));
+	if checkhmac(hmacY, pk2bit(ephemeral_pkY), N) then
+	event ServerConfirmNetwork(N);
+	new ephemeral_skB: sk;
+	let ephemeral_pkB = get_pk(ephemeral_skB) in
+	let m2 = (ephemeral_pkB, hmac(pk2bit(ephemeral_pkB), N)) in
+	out(c, m2);
+	let key1 = dhexp(ephemeral_pkY, ephemeral_skB) in
+	let key2 = dhexp(ephemeral_pkY, skB) in
+	let secret1 = hash_to_key((N, key1, key2)) in
+	in(c, m3: bitstring);
+	let (=true, (sign_Y: bitstring, pkY: pk)) = aeaddec( secret1, nonce0, m3) in
+	if checksign(sign_Y, pkY, (N, pkB, hash(symkey2bit(key1)))) then
+	let key3 = dhexp(pkY, ephemeral_skB) in
+	let secret2 = hash_to_key((N, key1, key2, key3)) in
+	let m4 = aeadenc( secret2, nonce0, (sign((N, sign_Y, pkY, hash(symkey2bit(key1))),skB))) in
+	event ServerAccept(pkY);
+	out(c, m4);
+  event ServerEndSession(pkB, N).
+
+(*----------------------------------*)
+(*Main process											*)
+(*----------------------------------*)
+
+process
+	!(
+    !(
+      !Alice(skA, get_pk(skB), skInv) | !Bob(skB)
+    ) | phase 1; out(c,skB)
+  )
