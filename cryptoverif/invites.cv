@@ -5,7 +5,7 @@
 type hmac_key [large, fixed].
 type hash_key [nonuniform, fixed].
 type sym_key [large, fixed].
-type nonce [bounded].(*Not sure*)
+type nonce [bounded].
 type Z [large, bounded].
 type G [large, bounded].
 type subG [large, bounded].
@@ -53,17 +53,14 @@ fun G2symkey(G): sym_key [typeConverter].
 expand DH_X25519(G, Z, g, exp, mult, subG, g_k, exp_div_k, exp_div_k', pow_k, subG2G, G_zero, sub_zero).
 
 (*HMAC*)(*hmac function is modeled as a PRF *)
-(*Does scuttlebutts framework provide with large output?*)
 proba Pprf.
 expand PRF(hmac_key, bitstring, prfout, hmac, Pprf).
 
-(*Hash function SHA256which is not proven to secure*)
-(*We assume in this model that it is collision resistant and preimage resistant*)
+(*We assume in this model that SHA256 is collision resistant and preimage resistant*)
 proba Phash.
 expand CollisionResistant_hash(hash_key, bitstring, bitstring, hash, hashoracle, Phash).
 
-(*Hash function SHA256 with diffeent output type*)
-(*We assume in this model that it is collision resistant and preimage resistant*)
+(*We assume in this model that SHA256 is collision resistant and preimage resistant*)
 proba Phash2key.
 expand CollisionResistant_hash(hash_key, bitstring, sym_key, hash2key, hash2keyoracle, Phash2key).
 
