@@ -102,7 +102,6 @@ query x:pk, y:hmac_key; event (ClientEndSession(x, y)) ==> event (ServerAccept(x
 query attacker(N).
 query pkSender: pk, mes: bitstring; inj-event (Receivedmessage(pkSender, mes)) ==> inj-event (Sentmessage(pkSender, mes)).
 
-(* query secret m [real_or_random]. *)
 
 (*----------------------------------*)
 (*Principals												*)

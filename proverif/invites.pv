@@ -95,15 +95,14 @@ otherwise forall k:sym_key, n: nonce, str: bitstring;
 (*Queries														*)
 (*----------------------------------*)
 
-(*query attacker(m).*)
-(*query attacker(get_pk(skInv)).
-query attacker(get_pk(skB)) phase 0.*)
+query attacker(m).
+query attacker(get_pk(skInv)).
+query attacker(get_pk(skB)) phase 0.
 query x:pk, y:hmac_key; event (ServerEndSession(x, y)) ==> event (ClientAccept(x))&&event(ClientConfirmNetwork(y)).
 query x:pk, y:hmac_key; event (ClientEndSession(x, y)) ==> event (ServerAccept(x))&&event(ServerConfirmNetwork(y)).
-(*query attacker(N).*)
+query attacker(N).
 
 
-(* query secret m [real_or_random]. *)
 
 (*----------------------------------*)
 (*Principals												*)

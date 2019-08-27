@@ -102,7 +102,6 @@ query x:pk, y:hmac_key; event (ClientEndSession(x, y)) ==> event (ServerAccept(x
 query attacker(N).
 query pkSender: pk, mes: bitstring; inj-event (Receivedmessage(pkSender, mes)) ==> inj-event (Sentmessage(pkSender, mes)).
 
-(* query secret m [real_or_random]. *)
 
 (*----------------------------------*)
 (*Principals												*)
@@ -165,11 +164,11 @@ let Bob(skB:sk) =
 (*----------------------------------*)
 
 process
-	(*!(*)
+	!(
     !(
       !Alice(skA, get_pk(skB)) | !Bob(skB)
-    )(* | phase 1; out(c,skB)*)
-  (*)*)
+    ) | phase 1; out(c,skB)
+  )
   (*In this file we model the Scuttlebutt handshake protocol
   In the scenatio where the attacker can set and modify Alices
   long-term and ephemeral keys but Bob's public key is secret.
