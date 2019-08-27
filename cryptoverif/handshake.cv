@@ -4,7 +4,6 @@
 
 
 set interactiveMode = true.
-set useKnownEqualitiesWithFunctionsInMatching = true.
 (*----------------------------------*)
 (*Types															*)
 (*----------------------------------*)
@@ -12,7 +11,7 @@ set useKnownEqualitiesWithFunctionsInMatching = true.
 type hmac_key [large, fixed].
 type hash_key [nonuniform, fixed].
 type sym_key [large, fixed].
-type nonce [bounded].(*Not sure*)
+type nonce [bounded].
 type subG [large, bounded].
 type D [fixed].
 type message [bounded].
@@ -20,11 +19,10 @@ type seed [large, fixed].
 type skey [bounded].
 type pkey [bounded].
 
-type G [bounded,large].  (* type of public keys *)
-type G8 [bounded,large]. (* type of { X^k, X \in F_p } *)
+type G [bounded,large].
+type G8 [bounded,large].
 fun G_to_bitstring(G): bitstring [data].
-type Z [bounded,large,nonuniform].   (* type of exponents (must be "bounded" and
-                               "large", is the set of multiples of k prime to qq' modulo kqq'.) *)
+type Z [bounded,large,nonuniform].
 
 (*----------------------------------*)
 (*Constants													*)
@@ -59,52 +57,21 @@ fun mssg2bit(message): bitstring [typeConverter].
 fun bit2symkey(bitstring): sym_key [typeConverter].
 
 (*DH*)
-
-(**** Gap Diffie-Hellman ****)
 proba P_GDH.
-expand DH_X25519(
-  (* types *)
-  G,          (* Public keys *)
-  Z,          (* Exponents *)
-  g,          (* base point *)
-  exp,        (* exponentiation function *)
-  mult,       (* multiplication function for exponents *)
-  G8,         (*???????*)
-  g8,         (*the generator of G8*)
-  exp_div8,   (*exp in G8?*)
-  exp_div8',  (* a symbol that replaces exp_div8 after game transformation *)
-  pow8,
-  G8_to_G,
-  zero,
-  zero8
-).
+expand DH_X25519(G, Z, g, exp, mult, G8, g8, exp_div8, exp_div8', pow8, G8_to_G, zero, zero8).
 
-expand GDH(
-  (* types *)
-  G8,           (* Group elements *)
-  Z,            (* Exponents *)
-  g8,           (* a generator of the group *)
-  exp_div8,     (* exponentiation function *)
-  exp_div8',    (* a symbol that replaces exp_div8 after game transformation *)
-  mult,         (* multiplication function for exponents *)
-  (* probabilities *)
-  P_GDH         (* probability of breaking the GDH assumption *)
-).
+expand GDH(G8, Z, g8, exp_div8, exp_div8', mult, P_GDH).
 
 
 (*HMAC*)(*hmac function is modeled as a PRF *)
-(*Does scuttlebutts framework provide with large output?*)
-(*proba Pprf.
-expand PRF(hmac_key, bitstring, hmac_key, hmac, Pprf).*)
-expand ROM_hash(hmac_key, bitstring, hmac_key, hmac, hashoracle1, qH).
+proba Pprf.
+expand PRF(hmac_key, bitstring, hmac_key, hmac, Pprf).
 
-(*Hash function SHA256which is not proven to be secure*)
-(*We assume in this model that it is collision resistant and preimage resistant*)
+(*We assume in this model that hash function is collision resistant and preimage resistant*)
 proba Phash.
 expand CollisionResistant_hash(hash_key, bitstring, bitstring, hash, hashoracle, Phash).
 
-(*Hash function SHA256 with diffeent output type*)
-(*We assume in this model that it is collision resistant and preimage resistant*)
+(*We assume in this model that hash function is collision resistant and preimage resistant*)
 proba Phash2key.
 expand CollisionResistant_hash(hash_key, bitstring, sym_key, hash2key, hash2keyoracle, Phash2key).
 
