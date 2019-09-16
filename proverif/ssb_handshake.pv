@@ -115,7 +115,7 @@ let Alice(skA:sk, pkB:pk) =
 	let m1 = (ephemeral_pkA, hmac(pk2bit(ephemeral_pkA), N)) in
 	out(c, m1);
 	in(c, (ephemeral_pkX:pk, hmacX: bitstring));
-	(*if checkhmac(hmacX, pk2bit(ephemeral_pkX), N) then*)
+	if checkhmac(hmacX, pk2bit(ephemeral_pkX), N) then
 	event ClientConfirmNetwork(N);
 	let key1 = dhexp(ephemeral_pkX, ephemeral_skA) in
 	let key2 = dhexp(pkB, ephemeral_skA) in
@@ -127,7 +127,7 @@ let Alice(skA:sk, pkB:pk) =
 	let secret2 = hash_to_key((N, key1, key2, key3)) in
 	in (c, m4: bitstring);
 	let (value: bool, sign_B: bitstring) = aeaddec(secret2, nonce0, m4) in
-	(*if checksign(sign_B, pkB, (N, sign_A, pkA, hash(symkey2bit(key1)))) then*)
+  if checksign(sign_B, pkB, (N, sign_A, pkA, hash(symkey2bit(key1)))) then
 	event ClientAccept(pkB);
   event Sentmessage(pkA, m);
 	out(c, enc((sign(m, skA), m), secret2));
@@ -136,7 +136,7 @@ let Alice(skA:sk, pkB:pk) =
 let Bob(skB:sk) =
   let pkB = get_pk(skB) in
 	in(c, (ephemeral_pkY:pk, hmacY: bitstring));
-	(*if checkhmac(hmacY, pk2bit(ephemeral_pkY), N) then*)
+	if checkhmac(hmacY, pk2bit(ephemeral_pkY), N) then
 	event ServerConfirmNetwork(N);
 	new ephemeral_skB: sk;
 	let ephemeral_pkB = get_pk(ephemeral_skB) in
@@ -147,7 +147,7 @@ let Bob(skB:sk) =
 	let secret1 = hash_to_key((N, key1, key2)) in
 	in(c, m3: bitstring);
 	let (value: bool, (sign_Y: bitstring, pkY: pk)) = aeaddec(secret1, nonce0, m3) in
-	(*if checksign(sign_Y, pkY, (N, pkB, hash(symkey2bit(key1)))) then*)
+	if checksign(sign_Y, pkY, (N, pkB, hash(symkey2bit(key1)))) then
 	let key3 = dhexp(pkY, ephemeral_skB) in
 	let secret2 = hash_to_key((N, key1, key2, key3)) in
 	let m4 = aeadenc(secret2, nonce0, (sign((N, sign_Y, pkY, hash(symkey2bit(key1))),skB))) in
@@ -155,7 +155,7 @@ let Bob(skB:sk) =
 	out(c, m4);
 	in(c, m5: bitstring);
 	let (sign_m:bitstring, m:bitstring) = dec(m5, secret2) in
-	(*if checksign(sign_m, pkY, m) then*)
+	if checksign(sign_m, pkY, m) then
   event Receivedmessage(pkY, m);
 	event ServerEndSession(pkB, N).
 
