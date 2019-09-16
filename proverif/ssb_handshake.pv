@@ -126,7 +126,7 @@ let Alice(skA:sk, pkB:pk) =
 	let key3 = dhexp(ephemeral_pkX, skA) in
 	let secret2 = hash_to_key((N, key1, key2, key3)) in
 	in (c, m4: bitstring);
-	let (value: bool, sign_B: bitstring) = aeaddec(secret2, nonce0, m4) in
+	let (=true, sign_B: bitstring) = aeaddec(secret2, nonce0, m4) in
   if checksign(sign_B, pkB, (N, sign_A, pkA, hash(symkey2bit(key1)))) then
 	event ClientAccept(pkB);
   event Sentmessage(pkA, m);
@@ -146,7 +146,7 @@ let Bob(skB:sk) =
 	let key2 = dhexp(ephemeral_pkY, skB) in
 	let secret1 = hash_to_key((N, key1, key2)) in
 	in(c, m3: bitstring);
-	let (value: bool, (sign_Y: bitstring, pkY: pk)) = aeaddec(secret1, nonce0, m3) in
+	let (=true, (sign_Y: bitstring, pkY: pk)) = aeaddec(secret1, nonce0, m3) in
 	if checksign(sign_Y, pkY, (N, pkB, hash(symkey2bit(key1)))) then
 	let key3 = dhexp(pkY, ephemeral_skB) in
 	let secret2 = hash_to_key((N, key1, key2, key3)) in
